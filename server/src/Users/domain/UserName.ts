@@ -1,4 +1,4 @@
-import { StringValueObject } from "../../shared/StringValueObject";
+import { StringValueObject } from "../../Utilities/StringValueObject";
 
 
 export class UserName extends StringValueObject {
