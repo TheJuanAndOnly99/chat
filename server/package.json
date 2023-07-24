@@ -1,0 +1,26 @@
+{
+  "name": "chat",
+  "version": "1.0.0",
+  "description": "Learning about sockets",
+  "main": "index.ts",
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TheJuanAndOnly99/chat.git"
+  },
+  "author": "TheJuanAndOnly99",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/TheJuanAndOnly99/chat/issues"
+  },
+  "homepage": "https://github.com/TheJuanAndOnly99/chat#readme",
+  "devDependencies": {
+    "typescript": "^5.1.6"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "socket.io": "^4.7.1"
+  }
+}

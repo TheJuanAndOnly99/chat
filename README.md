@@ -1,2 +1,2 @@
-# chat
-Learning about sockets
+# Chat Application
+Created to learn about sockets
