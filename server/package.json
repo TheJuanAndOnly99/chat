@@ -18,8 +18,10 @@
   "homepage": "https://github.com/TheJuanAndOnly99/chat#readme",
   "devDependencies": {
     "@types/bcrypt": "^5.0.0",
+    "@types/jest": "^29.5.3",
     "@types/uuid": "^9.0.2",
     "jest-mock-extended": "^3.0.4",
+    "ts-jest": "^29.1.1",
     "typescript": "^5.1.6"
   },
   "dependencies": {
