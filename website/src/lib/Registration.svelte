@@ -1,5 +1,5 @@
-<script>
-  let action = 'register'; // Default to registration
+<script lang="ts">
+  let action = ''; // Default to registration
   let username = '';
   let email = '';
   let password = '';
@@ -9,39 +9,50 @@
 
     const formData = { username, email, password };
 
+    let url = 'http://localhost:3000/users';
+    let method = 'POST'; // Default to POST for registration
+
+    if (action === 'login') {
+      url = `http://localhost:3000/user/${username}`;
+      method = 'GET'; // Use GET for login
+    }
+
     try {
-      let url = 'http://localhost:3000/users'
-
-      if (action === 'login') {
-        url = 'http://localhost:3000/login';
-      }
-
       const response = await fetch(url, {
-        method: 'POST',
+        method,
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: method === 'POST' ? JSON.stringify(formData) : undefined, // Only include a body for POST requests
       });
 
+    
       if (response.ok) {
         // Registration successful, you can redirect or show a success message
-        console.log('User registered successfully');
+        const message = action === 'login' ? 'Login successful' : 'User registered successfully';
+        console.log(message);
       } else {
         // Registration failed, handle errors
-        console.error('User registration failed');
+        console.error('Registration or login failed');
       }
     } catch (error) {
-      console.error('Error registering user:', error);
+      console.error('Error registering or logging in:', error);
     }
+  }
+
+  function handleBack() {
+    action = ''; // Reset the action to empty when going back
   }
 </script>
 
-<div class="container registerLoginContainer">
-  <button on:click={() => action = 'register'}>Register</button>
-  <button on:click={() => action = 'login'}>Login</button>
+<div class="container buttonContainer">
+  {#if action === ''}
+    <button on:click={() => action = 'register'}>Register</button>
+    <button on:click={() => action = 'login'}>Login</button>
+  {/if}
 </div>
 
+{#if action === 'register' || action === 'login'}
 <form on:submit={handleSubmit}>
   {#if action === 'register'}
     <div>
@@ -60,20 +71,17 @@
     <input type="password" id="password" bind:value={password} />
   </div>
 
-  <div class="buttonContainer">
+  <div class="container buttonContainer">
+    <button class="margin-right" on:click={handleBack}>Back</button>
     <button type="submit">{action === 'register' ? 'Register' : 'Login'}</button>
   </div>
     
 </form>
+{/if}
 
 <style>
   .container {
     margin: 1em;
-  }
-
-  .registerLoginContainer{
-    display: flex;
-    justify-content: space-around;
   }
 
   form{
@@ -88,7 +96,11 @@
 
   .buttonContainer{
     display: flex;
-    justify-content: center;
+    justify-content: space-around;
+  }
+
+  .margin-right{
+    margin-right: 1em;
   }
 
 </style>
