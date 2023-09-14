@@ -12,13 +12,18 @@ export class UserCreator {
 	constructor(private readonly repository: UserRepository) {}
 
   // Create and store new user
-	async create({ id, username, email, password }: UserCreatorRequest): Promise<void> {
+	async create({ Uid, username, email, password }: UserCreatorRequest): Promise<void> {
 		const user = new User(
-			new UserId(id),
+			new UserId(Uid),
       new UserName(username),
       new UserEmail(email),
       new UserPassword(password)
 		);
 		await this.repository.create(user);
 	}
+
+	// Delete existing user
+	async delete(userId: UserId): Promise<void> {
+    await this.repository.delete(userId.value);
+  }
 }

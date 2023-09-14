@@ -6,7 +6,7 @@ import { UserPassword } from "../../Users/domain/UserPassword";
 
 // User interface for mongoose
 export interface IUser extends mongoose.Document {
-  id: UserId,
+  Uid: UserId,
   username: UserName,
   email: UserEmail,
   password?: UserPassword,
@@ -14,7 +14,7 @@ export interface IUser extends mongoose.Document {
 
 // User schema for mongoose
 export const UserSchema = new mongoose.Schema<IUser>({
-  id: {
+  Uid: {
     type: String
   },
   username: {

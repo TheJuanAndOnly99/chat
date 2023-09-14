@@ -1,3 +1,3 @@
-import { Uuid } from "../../Utilities/Uuid";
+import { Uuid } from "../../utilities/Uuid";
 
 export class UserId extends Uuid {}

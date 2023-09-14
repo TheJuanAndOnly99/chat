@@ -1,4 +1,4 @@
-import { StringValueObject } from "../../Utilities/StringValueObject";
+import { StringValueObject } from "../../utilities/StringValueObject";
 
 
 export class UserEmail extends StringValueObject {

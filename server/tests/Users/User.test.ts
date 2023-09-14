@@ -24,14 +24,14 @@ describe("UserCreator", () => {
 
 	it("should create a user correctly", async () => {
 		const request = {
-			id: "1",
+			Uid: "1",
       username: "testUserName",
       email: "test@email.com",
       password: "1testPassword!"
 		};
 
 		const expectedUser = new User(
-			new UserId(request.id),
+			new UserId(request.Uid),
       new UserName(request.username),
       new UserEmail(request.email),
       new UserPassword(request.password)
@@ -44,7 +44,7 @@ describe("UserCreator", () => {
 
   it("should throw error when username is longer than 15 characters", async () => {
 		const request = {
-			id: "1",
+			Uid: "1",
 			username: "veryLongUserNameThatExceeds15Characters",
       email: "test@email.com",
       password: "1testPassword!"
@@ -55,7 +55,7 @@ describe("UserCreator", () => {
 
   it("should throw an error when the user email is not valid", async () => {
 		const request = {
-			id: "1",
+			Uid: "1",
 			username: "Test",
 			email: "invalid email",
       password: "1testPassword!"
@@ -66,7 +66,7 @@ describe("UserCreator", () => {
 
   it("should throw an error when the user password is not valid", async () => {
 		const request = {
-			id: "1",
+			Uid: "1",
 			username: "Test",
 			email: "test@email.com",
 			password: "invalid password",
@@ -77,7 +77,7 @@ describe("UserCreator", () => {
 
   it("should generate a UUID for a new user", async () => {
 		const request = {
-			id: "",
+			Uid: "",
 			username: "Test",
 			email: "test@email.com",
 			password: "1testPassword!",
@@ -87,14 +87,14 @@ describe("UserCreator", () => {
 
 		expect(repository.create).toHaveBeenCalledWith(
 			expect.objectContaining({
-				id: expect.any(UserId),
+				Uid: expect.any(UserId),
 			})
 		);
 	});
 
   it("should encrypt the password of a new user", async () => {
 		const request = {
-			id: "1",
+			Uid: "1",
 			username: "Test",
 			email: "test@email.com",
 			password: "1testPassword!",
@@ -118,7 +118,7 @@ describe("UserCreator", () => {
 
   it("should create a random username when one is not provided", async () => {
 		const request = {
-			id: "1",
+			Uid: "1",
 			username: "",
 			email: "test@email.com",
 			password: "1testPassword!",

@@ -6,6 +6,11 @@ import * as http from "http";
 import socketIO, { Server as SocketIOServer } from 'socket.io';
 import mongoose from "mongoose";
 
+import { MongoUserController } from "./controllers/users/mongoUserController";
+import { MongoUserRepository } from "./repositories/mongoUserRepository";
+import { UserSchema } from "./schema/mongoUserSchema";
+import { UserCreator } from "../Users/application/UserCreator";
+import { User } from "../Users/domain/User";
 
 export class Server {
   private readonly app: Application;
@@ -22,13 +27,24 @@ export class Server {
     this.io = new socketIO.Server(this.httpServer);
     this.port = process.env.PORT || 3000;
 
-		const router = Router();
-		this.app.use(router);
-		this.registerRoutes(router, this.io);
+		const userModel = mongoose.model<User>('User', UserSchema);
+		const userRepository = new MongoUserRepository(userModel);
+		const userCreator = new UserCreator(userRepository); // Assuming UserCreator is defined somewhere
 
+		const userController = new MongoUserController(userRepository, userCreator);
+
+		const router = Router();
+		router.post('/users', userController.create.bind(userController));
+    router.get('/users', userController.findAll.bind(userController));
+    router.get('/users/:Uid', userController.findById.bind(userController));
+    router.delete('/users/:Uid', userController.delete.bind(userController));
+    router.get('/user/:Username', userController.findByUsername.bind(userController));
+		this.app.use(router);
+
+		this.registerRoutes(router, this.io);
     this.initializeMiddlewares();
     this.initializeRoutes();
-    this.initializeSockets();
+    // this.initializeSockets();
     this.connectToDatabase();
   }
 
@@ -47,24 +63,24 @@ export class Server {
     });
   }
 
-  private initializeSockets(): void {
-    this.io?.on("connection", (socket) => {
-      console.log("A user connected.");
+  // private initializeSockets(): void {
+  //   this.io?.on("connection", (socket) => {
+  //     console.log("A user connected.");
 
-      // Handle incoming chat messages
-      socket.on("chatMessage", (message) => {
-        console.log("Received message:", message);
+  //     // Handle incoming chat messages
+  //     socket.on("chatMessage", (message) => {
+  //       console.log("Received message:", message);
 
-        // Broadcast the message to all connected clients (including sender)
-        this.io?.emit("chatMessage", message);
-      });
+  //       // Broadcast the message to all connected clients (including sender)
+  //       this.io?.emit("chatMessage", message);
+  //     });
 
-      // Handle user disconnection
-      socket.on("disconnect", () => {
-        console.log("A user disconnected.");
-      });
-    });
-  }
+  //     // Handle user disconnection
+  //     socket.on("disconnect", () => {
+  //       console.log("A user disconnected.");
+  //     });
+  //   });
+  // }
 
   private connectToDatabase(): void {
 		mongoose
