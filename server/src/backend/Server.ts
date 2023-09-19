@@ -6,15 +6,15 @@ import * as http from "http";
 import socketIO, { Server as SocketIOServer } from 'socket.io';
 import mongoose from "mongoose";
 
-import { MongoUserController } from "./controllers/users/mongoUserController";
-import { MongoRoomController } from "./controllers/rooms/mongoRoomsController";
-import { MongoMessageController } from "./controllers/messages/mongoMessagesController";
-import { MongoUserRepository } from "./repositories/users/mongoUserRepository";
-import { MongoRoomRepository } from "./repositories/rooms/mongoRoomRepository";
-import { MongoMessageRepository } from "./repositories/messages/mongoMessageRepository";
-import { UserSchema } from "./schema/mongoUserSchema";
-import { RoomSchema } from "./schema/mongoRoomSchema";
-import { MessageSchema } from "./schema/mongoMessageSchema";
+import { MongoUserController } from "./controllers/userController";
+import { MongoRoomController } from "./controllers/roomsController";
+import { MongoMessageController } from "./controllers/messagesController";
+import { MongoUserRepository } from "./repositories/userRepository";
+import { MongoRoomRepository } from "./repositories/roomRepository";
+import { MongoMessageRepository } from "./repositories/messageRepository";
+import { UserSchema } from "./schema/userSchema";
+import { RoomSchema } from "./schema/roomSchema";
+import { MessageSchema } from "./schema/messageSchema";
 import { UserCreator } from "../Users/application/UserCreator";
 import { RoomCreator } from '../Rooms/application/RoomCreator';
 import { MessageCreator } from "../Messages/application/MessageCreator";
@@ -62,6 +62,7 @@ export class Server {
 
     router.get('/rooms', roomController.findAll.bind(roomController));
     router.get('/rooms/:Uid', roomController.findById.bind(roomController));
+    router.get('/room/:Name', roomController.findByName.bind(roomController));
     router.post('/rooms', roomController.create.bind(roomController));
     router.delete('/rooms/:Uid', roomController.delete.bind(roomController));
     router.post('/rooms/:roomId/user/:userId', roomController.addUser.bind(roomController));

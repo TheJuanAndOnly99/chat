@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
 
-import { RoomCreator } from '../../../Rooms/application/RoomCreator';
-import { RoomCreatorRequest } from '../../../Rooms/application/requests/RoomCreatorRequest';
-import { MongoRoomRepository } from '../../repositories/rooms/mongoRoomRepository';
+import { RoomCreator } from '../../Rooms/application/RoomCreator';
+import { RoomCreatorRequest } from '../../Rooms/application/requests/RoomCreatorRequest';
+import { MongoRoomRepository } from '../repositories/roomRepository';
 
 export class MongoRoomController {
   private readonly repository: MongoRoomRepository;
@@ -15,8 +15,8 @@ export class MongoRoomController {
 
   async create(req: Request, res: Response): Promise<void> {
     try {
-    const { Uid } = req.body as RoomCreatorRequest;
-    const createdRoom = await this.creator.create({ Uid });
+    const { Uid, name } = req.body as RoomCreatorRequest;
+    const createdRoom = await this.creator.create({ Uid, name });
 
     res.status(201).send(createdRoom);
     } catch (error) {
@@ -34,6 +34,21 @@ export class MongoRoomController {
     const { Uid } = req.params;
     const room = await this.repository.findById(Uid);
     res.status(200).send(room);
+  }
+
+  async findByName(req: Request, res: Response): Promise<void> {
+    try {
+      const { Name } = req.params; // Use the parameter name defined in the route
+      const room = await this.repository.findByName(Name); // Use Name to search for the room
+      if (room) {
+        res.status(200).send(room);
+      } else {
+        res.status(404).send({ message: 'Room not found' });
+      }
+    } catch (error) {
+      console.error('Error finding room by name:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
   }
 
   async delete(req: Request, res: Response): Promise<void> {

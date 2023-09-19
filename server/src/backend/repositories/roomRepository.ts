@@ -1,6 +1,6 @@
-import { Room } from "../../../Rooms/domain/Room";
+import { Room } from "../../Rooms/domain/Room";
 import { Model } from "mongoose";
-import { RoomRepository } from "../../../Rooms/domain/RoomRepository";
+import { RoomRepository } from "../../Rooms/domain/RoomRepository";
 
 export class MongoRoomRepository implements RoomRepository {
   private roomModel: Model<Room>;
@@ -22,6 +22,11 @@ export class MongoRoomRepository implements RoomRepository {
   async findById(Uid: string): Promise<Room | null> {
     // Find a room by id in the database
     return this.roomModel.findById(Uid).exec();
+  }
+
+  async findByName(name: string): Promise<Room | null> {
+    // Find a room by name in the database
+    return this.roomModel.findOne({ name: name }).exec();
   }
 
   async delete(Uid: string): Promise<void> {

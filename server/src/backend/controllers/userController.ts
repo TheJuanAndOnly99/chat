@@ -1,9 +1,9 @@
 import { Request, Response } from 'express';
 
-import { UserCreator } from '../../../Users/application/UserCreator';
-import { UserCreatorRequest } from '../../../Users/application/requests/UserCreatorRequest';
-import { MongoUserRepository } from '../../repositories/users/mongoUserRepository';
-import { UserName } from '../../../Users/domain/UserName';
+import { UserCreator } from '../../Users/application/UserCreator';
+import { UserCreatorRequest } from '../../Users/application/requests/UserCreatorRequest';
+import { MongoUserRepository } from '../repositories/userRepository';
+import { UserName } from '../../Users/domain/UserName';
 
 export class MongoUserController {
   private readonly repository: MongoUserRepository;

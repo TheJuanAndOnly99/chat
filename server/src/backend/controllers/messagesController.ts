@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
 
-import { MessageCreator } from '../../../Messages/application/MessageCreator';
-import { MessageCreatorRequest } from '../../../Messages/application/requests/MessageCreatorRequest';
-import { MongoMessageRepository } from '../../repositories/messages/mongoMessageRepository';
+import { MessageCreator } from '../../Messages/application/MessageCreator';
+import { MessageCreatorRequest } from '../../Messages/application/requests/MessageCreatorRequest';
+import { MongoMessageRepository } from '../repositories/messageRepository';
 
 export class MongoMessageController {
   private readonly repository: MongoMessageRepository;

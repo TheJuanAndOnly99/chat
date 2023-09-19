@@ -5,6 +5,7 @@ import { User } from '../../Users/domain/User';
 export class Room {
   constructor(
     readonly Uid: RoomId,
+    readonly name: string,
     readonly users: User[] = [],
     readonly messages: Message[] = [],
   ) {}

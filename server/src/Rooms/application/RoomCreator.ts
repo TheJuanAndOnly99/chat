@@ -9,9 +9,10 @@ export class RoomCreator {
 	constructor(private readonly repository: RoomRepository) {}
 
   // Create and store new room
-	async create({ Uid }: RoomCreatorRequest): Promise<void> {
+	async create({ Uid, name }: RoomCreatorRequest): Promise<void> {
 		const room = new Room(
-			new RoomId(Uid)
+			new RoomId(Uid),
+			name
 		);
 		await this.repository.create(room);
 	}

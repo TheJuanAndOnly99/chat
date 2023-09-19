@@ -6,6 +6,7 @@ import { Message } from "../../Messages/domain/Message";
 // Room interface for mongoose
 export interface IRoom extends mongoose.Document {
   Uid: RoomId,
+  name: string,
   users: User[],
   messages: Message[],
 }
@@ -14,6 +15,10 @@ export interface IRoom extends mongoose.Document {
 export const RoomSchema = new mongoose.Schema<IRoom>({
   Uid: {
     type: String,
+  },
+  name: {
+    type: String,
+    required: true,
   },
   users: [
     {

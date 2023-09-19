@@ -110,6 +110,68 @@ async function refreshRooms() {
   }
 }
 
+
+// Get user _id from the DB
+async function fetchUserId() {
+  try {
+    const response = await fetch(`http://localhost:3000/user/${username}`);
+    if (response.ok) {
+      const userData = await response.json();
+      const userId = userData._id;
+      console.log('User ID:', userId)
+      return userId;
+    } else {
+      console.error('Error fetching user ID');
+    }
+  } catch (error) {
+    console.error('Error fetching user ID:', error);
+  }
+}
+
+// Get room _id from the DB
+async function fetchRoomId(roomId) {
+  const userId = await fetchUserId();
+  try {
+    const response = await fetch(`http://localhost:3000/room/${roomId}`);
+    if (response.ok) {
+      const roomData = await response.json();
+      const roomId = roomData._id; // Access the _id field from the response data
+      console.log('Room ID:', roomId);
+      
+      // Now that you have the roomId, you can call joinRoom with both roomId and userId
+      joinRoom(roomId, userId); 
+    } else {
+      console.error('Error fetching room ID');
+    }
+  } catch (error) {
+    console.error('Error fetching room ID:', error);
+  }
+}
+
+async function joinRoom(roomId, userId) {
+  try {
+    // Send a request to the server to add the user to the selected room
+    const response = await fetch(`http://localhost:3000/rooms/${roomId}/user/${userId}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      // You may need to include some user information in the request body
+      body: JSON.stringify({ userId: userId }), // Replace userId with the actual user ID
+    });
+
+    if (response.ok) {
+      // Handle a successful join, e.g., show a message or update the UI
+      console.log(`Joined room ${roomId}`);
+    } else {
+      // Handle errors if the join request fails
+      console.error('Error joining the room');
+    }
+  } catch (error) {
+    console.error('Error joining the room:', error);
+  }
+}
+
 </script>
 
 <div class="container buttonContainer">
@@ -160,7 +222,14 @@ async function refreshRooms() {
         <h3>Select Chat Room</h3>
         <ul>
           {#each rooms as room}
-            <li>{room.Uid}</li>
+            <li>
+              {room.name} 
+              <button on:click={() => {
+                fetchRoomId(room.name); // Fetch room ID and pass 'roomId' as a parameter
+              }}>
+                Join
+              </button>
+            </li>
           {/each}
         </ul>
         <h4>Create New Room</h4>
@@ -172,7 +241,6 @@ async function refreshRooms() {
     </div>
   </div>
 {/if}
-
 
 <style>
   .container {

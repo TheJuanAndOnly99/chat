@@ -1,6 +1,6 @@
-import { Message } from "../../../Messages/domain/Message";
+import { Message } from "../../Messages/domain/Message";
 import { Model } from "mongoose";
-import { MessageRepository } from "../../../Messages/domain/MessageRepository";
+import { MessageRepository } from "../../Messages/domain/MessageRepository";
 
 export class MongoMessageRepository implements MessageRepository {
   private messageModel: Model<Message>;
