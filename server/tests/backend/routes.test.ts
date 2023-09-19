@@ -41,4 +41,29 @@ describe('MongoUserController', () => {
       expect(res.body).toBeInstanceOf(Array);
     });
   });
+
+  describe('POST /rooms', () => {
+    it('should create a new room', async () => {
+      const roomData = {
+        Uid: 'room_id_123',
+      };
+
+      const res = await request(server)
+        .post('/rooms')
+        .send(roomData)
+        .expect(201);
+
+      expect(res.body).toEqual({});
+    });
+  });
+
+  describe('GET /rooms', () => {
+    it('should retrieve all rooms', async () => {
+      const res = await request(server)
+        .get('/rooms')
+        .expect(200);
+
+      expect(res.body).toBeInstanceOf(Array);
+    });
+  });
 });

@@ -1,8 +1,8 @@
-import { User } from "../../Users/domain/User";
-import { UserEmail } from "../../Users/domain/UserEmail";
-import { UserName } from "../../Users/domain/UserName";
+import { User } from "../../../Users/domain/User";
+import { UserEmail } from "../../../Users/domain/UserEmail";
+import { UserName } from "../../../Users/domain/UserName";
 import { Model } from "mongoose";
-import { UserRepository } from "../../Users/domain/UserRepository";
+import { UserRepository } from "../../../Users/domain/UserRepository";
 
 export class MongoUserRepository implements UserRepository {
   private userModel: Model<User>;

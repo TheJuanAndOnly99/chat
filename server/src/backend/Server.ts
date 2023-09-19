@@ -7,10 +7,20 @@ import socketIO, { Server as SocketIOServer } from 'socket.io';
 import mongoose from "mongoose";
 
 import { MongoUserController } from "./controllers/users/mongoUserController";
-import { MongoUserRepository } from "./repositories/mongoUserRepository";
+import { MongoRoomController } from "./controllers/rooms/mongoRoomsController";
+import { MongoMessageController } from "./controllers/messages/mongoMessagesController";
+import { MongoUserRepository } from "./repositories/users/mongoUserRepository";
+import { MongoRoomRepository } from "./repositories/rooms/mongoRoomRepository";
+import { MongoMessageRepository } from "./repositories/messages/mongoMessageRepository";
 import { UserSchema } from "./schema/mongoUserSchema";
+import { RoomSchema } from "./schema/mongoRoomSchema";
+import { MessageSchema } from "./schema/mongoMessageSchema";
 import { UserCreator } from "../Users/application/UserCreator";
+import { RoomCreator } from '../Rooms/application/RoomCreator';
+import { MessageCreator } from "../Messages/application/MessageCreator";
 import { User } from "../Users/domain/User";
+import { Room } from "../Rooms/domain/Room";
+import { Message } from '../Messages/domain/Message';
 
 export class Server {
   private readonly app: Application;
@@ -28,10 +38,20 @@ export class Server {
     this.port = process.env.PORT || 3000;
 
 		const userModel = mongoose.model<User>('User', UserSchema);
+    const roomModel = mongoose.model<Room>('Room', RoomSchema);
+    const messageModel = mongoose.model<Message>('Message', MessageSchema);
+
 		const userRepository = new MongoUserRepository(userModel);
-		const userCreator = new UserCreator(userRepository); // Assuming UserCreator is defined somewhere
+    const roomRepository = new MongoRoomRepository(roomModel);
+    const messageRepository = new MongoMessageRepository(messageModel);
+
+		const userCreator = new UserCreator(userRepository);
+    const roomCreator = new RoomCreator(roomRepository);
+    const messageCreator = new MessageCreator(messageRepository);
 
 		const userController = new MongoUserController(userRepository, userCreator);
+    const roomController = new MongoRoomController(roomRepository, roomCreator);
+    const messageController = new MongoMessageController(messageRepository, messageCreator);
 
 		const router = Router();
 		router.post('/users', userController.create.bind(userController));
@@ -39,6 +59,19 @@ export class Server {
     router.get('/users/:Uid', userController.findById.bind(userController));
     router.delete('/users/:Uid', userController.delete.bind(userController));
     router.get('/user/:Username', userController.findByUsername.bind(userController));
+
+    router.get('/rooms', roomController.findAll.bind(roomController));
+    router.get('/rooms/:Uid', roomController.findById.bind(roomController));
+    router.post('/rooms', roomController.create.bind(roomController));
+    router.delete('/rooms/:Uid', roomController.delete.bind(roomController));
+    router.post('/rooms/:roomId/user/:userId', roomController.addUser.bind(roomController));
+    router.delete('/rooms/:roomId/:userId', roomController.removeUser.bind(roomController));
+    router.post('/rooms/:roomId/message/:messageId', roomController.addMessage.bind(roomController));
+
+    router.get('/messages', messageController.findAll.bind(messageController));
+    router.get('/messages/:Uid', messageController.findById.bind(messageController));
+    router.post('/messages', messageController.create.bind(messageController));
+    router.delete('/messages/:Uid', messageController.delete.bind(messageController));
 		this.app.use(router);
 
 		this.registerRoutes(router, this.io);

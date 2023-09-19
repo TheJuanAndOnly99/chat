@@ -1,14 +1,13 @@
 <script lang="ts">
-  import Registration from './lib/Registration.svelte';
+  import Home from './lib/Home.svelte';
 </script>
 
 <main>
   <h1>Chat Room</h1>
 
-  <div class="registrationContainer">
-    <Registration />
+  <div>
+    <Home />
   </div>
-
 
 </main>
 
