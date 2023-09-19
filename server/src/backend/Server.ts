@@ -68,6 +68,7 @@ export class Server {
     router.post('/rooms/:roomId/user/:userId', roomController.addUser.bind(roomController));
     router.delete('/rooms/:roomId/:userId', roomController.removeUser.bind(roomController));
     router.post('/rooms/:roomId/message/:messageId', roomController.addMessage.bind(roomController));
+    router.get('/room/:roomId/messages', roomController.getAllMessages.bind(roomController));
 
     router.get('/messages', messageController.findAll.bind(messageController));
     router.get('/messages/:Uid', messageController.findById.bind(messageController));

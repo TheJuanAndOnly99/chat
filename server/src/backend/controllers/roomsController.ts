@@ -89,4 +89,11 @@ export class MongoRoomController {
       res.status(500).send('An error occurred while adding the message to the room.');
     }
   }
+
+  async getAllMessages(req: Request, res: Response): Promise<void> {
+    const { roomId } = req.params; // Updated parameter names
+    const messages = await this.repository.getAllMessages(roomId);
+    console.log('Messages:', messages);
+    res.status(200).send(messages);
+  }
 }

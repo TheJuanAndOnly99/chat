@@ -1,6 +1,7 @@
 import { Room } from "../../Rooms/domain/Room";
 import { Model } from "mongoose";
 import { RoomRepository } from "../../Rooms/domain/RoomRepository";
+import { Message } from "../../Messages/domain/Message";
 
 export class MongoRoomRepository implements RoomRepository {
   private roomModel: Model<Room>;
@@ -47,5 +48,18 @@ export class MongoRoomRepository implements RoomRepository {
   async addMessage(Uid: string, messageId: string): Promise<void> {
     // Add a message to a room by id in the database
     await this.roomModel.updateOne({ _id: Uid }, { $push: { messages: messageId } }).exec();
+  }
+
+  async getAllMessages(Uid: string): Promise<Message[] | null> {
+    // Get the room document by ID
+    const room = await this.roomModel.findById(Uid).exec();
+  
+    if (room) {
+      // Extract and return the 'messages' field from the room document
+      const messages: Message[] = room.messages;
+      return messages;
+    } else {
+      return null;
+    }
   }
 }
