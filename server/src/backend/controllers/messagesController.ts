@@ -18,13 +18,14 @@ export class MongoMessageController {
     const { Uid, text } = req.body as MessageCreatorRequest;
 
     const createdMessage = await this.creator.create({ Uid, text });
-
-    res.status(201).send(createdMessage);
+    
+    res.status(201).json(createdMessage);
     } catch (error) {
       console.error('Error creating a message:', error);
       res.status(500).json({ error: 'Internal server error' });
     }
   }
+
 
   async findAll(_req: Request, res: Response): Promise<void> {
     const messages = await this.repository.findAll();

@@ -1,10 +1,14 @@
 <script lang="ts">
-  let action = ''; // Default to registration
-  let username = '';
-  let email = '';
-  let password = '';
-  let isLoggedIn = false;
+  let action: string = ''; // Default to registration
+  let username: string = ''; // Store the username
+  let email: string = ''; // Store the email
+  let password: string = ''; // Store the password
+  let isLoggedIn: boolean = false; // Store the logged in status
+  let selectedRoom: string | null = null; // Store the selected room
+  let messages = []; // Store messages for the room
+  let newMessage = ''; // Store the new message text
 
+  // Handle registration and login
   async function handleSubmit(event) {
     event.preventDefault();
 
@@ -45,6 +49,7 @@
     }
   }
 
+  // Handle going back to the login/registration screen
   function handleBack() {
     action = ''; // Reset the action to empty when going back
   }
@@ -70,7 +75,6 @@
   // Call the fetchRooms function to load the list of rooms
   fetchRooms();
 
-
   // Create new room
   // Add a variable to store the name of the new room
   let newRoomName = '';
@@ -84,7 +88,7 @@
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ Uid: newRoomName }),
+      body: JSON.stringify({ name: newRoomName }),
     });
 
     refreshRooms();
@@ -92,85 +96,200 @@
   } catch (error) {
     console.error('Error creating a room:', error);
   }
-}
-
-async function refreshRooms() {
-  try {
-    const response = await fetch('http://localhost:3000/rooms');
-    if (response.status === 200) {
-      const roomsData = await response.json();
-      // Update the rooms list with the new data
-      rooms = roomsData;
-      newRoomName = ''; // Clear the input field
-    } else {
-      console.error('Error fetching rooms:', response.status, response.statusText);
-    }
-  } catch (error) {
-    console.error('Error fetching rooms:', error);
   }
-}
 
-
-// Get user _id from the DB
-async function fetchUserId() {
-  try {
-    const response = await fetch(`http://localhost:3000/user/${username}`);
-    if (response.ok) {
-      const userData = await response.json();
-      const userId = userData._id;
-      console.log('User ID:', userId)
-      return userId;
-    } else {
-      console.error('Error fetching user ID');
+  // Add a function to refresh the list of rooms
+  async function refreshRooms() {
+    try {
+      const response = await fetch('http://localhost:3000/rooms');
+      if (response.status === 200) {
+        const roomsData = await response.json();
+        // Update the rooms list with the new data
+        rooms = roomsData;
+        newRoomName = ''; // Clear the input field
+      } else {
+        console.error('Error fetching rooms:', response.status, response.statusText);
+      }
+    } catch (error) {
+      console.error('Error fetching rooms:', error);
     }
-  } catch (error) {
-    console.error('Error fetching user ID:', error);
   }
-}
 
-// Get room _id from the DB
-async function fetchRoomId(roomId) {
-  const userId = await fetchUserId();
-  try {
-    const response = await fetch(`http://localhost:3000/room/${roomId}`);
-    if (response.ok) {
-      const roomData = await response.json();
-      const roomId = roomData._id; // Access the _id field from the response data
-      console.log('Room ID:', roomId);
-      
-      // Now that you have the roomId, you can call joinRoom with both roomId and userId
-      joinRoom(roomId, userId); 
-    } else {
-      console.error('Error fetching room ID');
+  // Get user _id from the DB
+  async function fetchUserId() {
+    try {
+      const response = await fetch(`http://localhost:3000/user/${username}`);
+      if (response.ok) {
+        const userData = await response.json();
+        const userId = userData._id;
+        console.log('User ID:', userId)
+        return userId;
+      } else {
+        console.error('Error fetching user ID');
+      }
+    } catch (error) {
+      console.error('Error fetching user ID:', error);
     }
-  } catch (error) {
-    console.error('Error fetching room ID:', error);
   }
-}
 
-async function joinRoom(roomId, userId) {
-  try {
-    // Send a request to the server to add the user to the selected room
-    const response = await fetch(`http://localhost:3000/rooms/${roomId}/user/${userId}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      // You may need to include some user information in the request body
-      body: JSON.stringify({ userId: userId }), // Replace userId with the actual user ID
-    });
-
-    if (response.ok) {
-      // Handle a successful join, e.g., show a message or update the UI
-      console.log(`Joined room ${roomId}`);
-    } else {
-      // Handle errors if the join request fails
-      console.error('Error joining the room');
+  // Get room _id from the DB
+  async function fetchRoomId(roomId) {
+    const userId = await fetchUserId();
+    try {
+      const response = await fetch(`http://localhost:3000/room/${roomId}`);
+      if (response.ok) {
+        const roomData = await response.json();
+        const roomId = roomData._id; // Access the _id field from the response data
+        console.log('Room ID:', roomId);
+        
+        // Now that you have the roomId, you can call joinRoom with both roomId and userId
+        joinRoom(roomId, userId); 
+        fetchMessages(roomId);
+      } else {
+        console.error('Error fetching room ID');
+      }
+    } catch (error) {
+      console.error('Error fetching room ID:', error);
     }
-  } catch (error) {
-    console.error('Error joining the room:', error);
   }
-}
+
+  // Join a room
+  async function joinRoom(roomId, userId) {
+    try {
+      // Send a request to the server to add the user to the selected room
+      const response = await fetch(`http://localhost:3000/rooms/${roomId}/user/${userId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        // You may need to include some user information in the request body
+        body: JSON.stringify({ userId: userId }), // Replace userId with the actual user ID
+      });
+
+      if (response.ok) {
+        // Handle a successful join, e.g., show a message or update the UI
+        console.log(`Joined room ${roomId}`);
+        selectRoom(roomId);
+      } else {
+        // Handle errors if the join request fails
+        console.error('Error joining the room');
+      }
+    } catch (error) {
+      console.error('Error joining the room:', error);
+    }
+  }
+
+  // Select a room
+  function selectRoom(roomName: string) {
+    selectedRoom = roomName; // Assign a room name to selectedRoom
+  }
+
+  // Fetch messages
+  async function fetchMessages(roomId) {
+    try {
+      const response = await fetch(`http://localhost:3000/room/${roomId}/messages`);
+      if (response.ok) {
+        const messageData = await response.json();
+        // for each message in messageData, fetch the message text
+        for (const message of messageData) {
+          const messageText = await fetchMessageText(message);
+          // Add the message text to the messages array
+          messages = [...messages, { text: messageText }];
+        }
+        console.log(`Messages ${messages}`)
+      } else {
+        console.error('Error fetching messages');
+      }
+    } catch (error) {
+      console.error('Error fetching messages:', error);
+    }
+  }
+
+  // Fetch message text
+  async function fetchMessageText(messageId) {
+    try {
+      const response = await fetch(`http://localhost:3000/messages/${messageId}`);
+      if (response.ok) {
+        const messageData = await response.json();
+        const messageText = messageData.text;
+        console.log(`Message text: ${messageText}`);
+        return messageText;
+      } else {
+        console.error('Error fetching message text');
+      }
+    } catch (error) {
+      console.error('Error fetching message text:', error);
+    }
+  }
+
+  function setMessage(event) {
+    event.preventDefault();
+    newMessage = event.target[0].value;
+    console.log(`New message: ${newMessage}`);
+    createMessage(newMessage);
+  }
+
+  function refreshMessages() {
+    messages = [];
+    fetchMessages(selectedRoom);
+  }
+
+  // Get latest message
+  async function getLatestMessage() {
+    const messagesResponse = await fetch(`http://localhost:3000/messages`);
+    const messagesData = await messagesResponse.json();
+    const messageId = messagesData[messagesData.length - 1]._id;
+    return messageId;
+  }
+
+  // Create a message
+  async function createMessage(newMessage) {
+    try {
+      const response = await fetch(`http://localhost:3000/messages`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ text: newMessage }),
+      });
+
+      if (response.ok) {
+        console.log(response.body);
+      } else {
+        console.error('Error creating message');
+      }
+
+      const messageId = await getLatestMessage();
+
+      addMessage(selectedRoom, messageId);
+
+    } catch (error) {
+      console.error('Error creating message:', error);
+    }
+  }
+
+  async function addMessage(roomId, messageId) {
+    console.log(`Message ID: ${messageId}`);
+    console.log (`Room ID: ${roomId}`);
+    try {
+      const response = await fetch(`http://localhost:3000/rooms/${roomId}/message/${messageId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+
+      if (response.ok) {
+        // Clear the input field and refresh messages
+        newMessage = '';
+        refreshMessages();
+      } else {
+        console.error('Error adding message');
+      }
+    } catch (error) {
+      console.error('Error adding message:', error);
+    }
+  }
 
 </script>
 
@@ -241,6 +360,26 @@ async function joinRoom(roomId, userId) {
     </div>
   </div>
 {/if}
+
+{#if selectedRoom !== null }
+  <div class="chat-room">
+    <div>
+      <h2>Chat Room</h2>
+      <ul>
+        {#each messages as message}
+          <li>{username}: {message.text}</li>
+        {/each}
+      </ul>
+      <form on:submit={setMessage}>
+        <input type="text" placeholder="Type your message" bind:value={newMessage} />
+        <button type="submit">Send</button>
+      </form>
+    </div>
+  </div>
+{:else}
+  <p></p>
+{/if}
+
 
 <style>
   .container {

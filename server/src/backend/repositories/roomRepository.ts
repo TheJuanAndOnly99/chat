@@ -59,7 +59,7 @@ export class MongoRoomRepository implements RoomRepository {
       const messages: Message[] = room.messages;
       return messages;
     } else {
-      return null;
+      return null;  
     }
   }
 }
