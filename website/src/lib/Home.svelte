@@ -1,4 +1,6 @@
 <script lang="ts">
+  import Cookies from 'js-cookie';
+
   let action: string = ''; // Default to registration
   let username: string = ''; // Store the username
   let email: string = ''; // Store the email
@@ -7,6 +9,7 @@
   let selectedRoom: string | null = null; // Store the selected room
   let messages = []; // Store messages for the room
   let newMessage = ''; // Store the new message text
+  let jwt = ''; // Store the JWT
 
   // Handle registration and login
   async function handleSubmit(event) {
@@ -16,10 +19,11 @@
 
     let url = 'http://localhost:3000/users';
     let method = 'POST'; // Default to POST for registration
+    let body = JSON.stringify(formData);
 
     if (action === 'login') {
-      url = `http://localhost:3000/user/${username}`;
-      method = 'GET'; // Use GET for login
+      url = `http://127.0.0.1:3000/login/`;
+      body = JSON.stringify({ username });
     }
 
     try {
@@ -28,7 +32,8 @@
         headers: {
           'Content-Type': 'application/json',
         },
-        body: method === 'POST' ? JSON.stringify(formData) : undefined, // Only include a body for POST requests
+        body,
+        credentials: 'include',
       });
 
     
@@ -36,6 +41,8 @@
         if (action === 'login') {
           // Set isLoggedIn to true upon successful login
           isLoggedIn = true;
+          jwt = Cookies.get('jwt');
+          console.log(jwt);
         } else {
           // Show a success message for registration
           console.log('User registered successfully');
@@ -80,22 +87,24 @@
   let newRoomName = '';
 
   async function handleCreateRoom(event) {
-  event.preventDefault();
+    event.preventDefault();
 
-  try {
-    const response = await fetch('http://localhost:3000/rooms', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ name: newRoomName }),
-    });
+    try {
+      const response = await fetch('http://localhost:3000/rooms', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${jwt}`
+        
+        },
+        body: JSON.stringify({ name: newRoomName }),
+      });
 
-    refreshRooms();
+      refreshRooms();
 
-  } catch (error) {
-    console.error('Error creating a room:', error);
-  }
+    } catch (error) {
+      console.error('Error creating a room:', error);
+    }
   }
 
   // Add a function to refresh the list of rooms
@@ -196,7 +205,6 @@
           // Add the message text to the messages array
           messages = [...messages, { text: messageText }];
         }
-        console.log(`Messages ${messages}`)
       } else {
         console.error('Error fetching messages');
       }
