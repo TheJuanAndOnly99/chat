@@ -2,6 +2,7 @@
   import Cookies from 'js-cookie';
   import io from 'socket.io-client';
   import { onMount } from 'svelte';
+  import 'dotenv/config'
 
   let action: string = ''; // Default to registration
   let username: string = ''; // Store the username
@@ -16,7 +17,8 @@
   let messages = []; // Store messages for the room
   let newMessage = ''; // Store the new message text
   let jwt = ''; // Store the JWT
-  const socket = io('http://127.0.0.1:3000')
+  const API_URL = process.env.API_URL;
+  const socket = io(API_URL);
 
    // Emit a chat message to the server
   async function sendChatMessage(text: string) {
@@ -40,7 +42,7 @@
 
     const formData = { username, email, password };
 
-    let url = 'http://127.0.0.1:3000/users';
+    let url = `${API_URL}/users`;
     let method = 'POST'; // Default to POST for registration
     let body = JSON.stringify(formData);
 
