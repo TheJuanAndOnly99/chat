@@ -17,7 +17,7 @@
 
     const formData = { username, email, password };
 
-    let url = 'http://localhost:3000/users';
+    let url = 'http://127.0.0.1:3000/users';
     let method = 'POST'; // Default to POST for registration
     let body = JSON.stringify(formData);
 
@@ -42,7 +42,6 @@
           // Set isLoggedIn to true upon successful login
           isLoggedIn = true;
           jwt = Cookies.get('jwt');
-          console.log(jwt);
         } else {
           // Show a success message for registration
           console.log('User registered successfully');
@@ -68,7 +67,7 @@
   // Fetch the list of rooms when the page loads
   async function fetchRooms() {
     try {
-      const response = await fetch('http://localhost:3000/rooms');
+      const response = await fetch('http://127.0.0.1:3000/rooms');
       if (response.ok) {
         rooms = await response.json();
       } else {
@@ -90,7 +89,7 @@
     event.preventDefault();
 
     try {
-      const response = await fetch('http://localhost:3000/rooms', {
+      const response = await fetch('http://127.0.0.1:3000/rooms', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -110,7 +109,7 @@
   // Add a function to refresh the list of rooms
   async function refreshRooms() {
     try {
-      const response = await fetch('http://localhost:3000/rooms');
+      const response = await fetch('http://127.0.0.1:3000/rooms');
       if (response.status === 200) {
         const roomsData = await response.json();
         // Update the rooms list with the new data
@@ -127,7 +126,7 @@
   // Get user _id from the DB
   async function fetchUserId() {
     try {
-      const response = await fetch(`http://localhost:3000/user/${username}`);
+      const response = await fetch(`http://127.0.0.1:3000/user/${username}`);
       if (response.ok) {
         const userData = await response.json();
         const userId = userData._id;
@@ -145,7 +144,7 @@
   async function fetchRoomId(roomId) {
     const userId = await fetchUserId();
     try {
-      const response = await fetch(`http://localhost:3000/room/${roomId}`);
+      const response = await fetch(`http://127.0.0.1:3000/room/${roomId}`);
       if (response.ok) {
         const roomData = await response.json();
         const roomId = roomData._id; // Access the _id field from the response data
@@ -166,10 +165,11 @@
   async function joinRoom(roomId, userId) {
     try {
       // Send a request to the server to add the user to the selected room
-      const response = await fetch(`http://localhost:3000/rooms/${roomId}/user/${userId}`, {
+      const response = await fetch(`http://127.0.0.1:3000/rooms/${roomId}/user/${userId}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${jwt}`
         },
         // You may need to include some user information in the request body
         body: JSON.stringify({ userId: userId }), // Replace userId with the actual user ID
@@ -196,7 +196,7 @@
   // Fetch messages
   async function fetchMessages(roomId) {
     try {
-      const response = await fetch(`http://localhost:3000/room/${roomId}/messages`);
+      const response = await fetch(`http://127.0.0.1:3000/room/${roomId}/messages`);
       if (response.ok) {
         const messageData = await response.json();
         // for each message in messageData, fetch the message text
@@ -216,7 +216,7 @@
   // Fetch message text
   async function fetchMessageText(messageId) {
     try {
-      const response = await fetch(`http://localhost:3000/messages/${messageId}`);
+      const response = await fetch(`http://127.0.0.1:3000/messages/${messageId}`);
       if (response.ok) {
         const messageData = await response.json();
         const messageText = messageData.text;
@@ -244,7 +244,7 @@
 
   // Get latest message
   async function getLatestMessage() {
-    const messagesResponse = await fetch(`http://localhost:3000/messages`);
+    const messagesResponse = await fetch(`http://127.0.0.1:3000/messages`);
     const messagesData = await messagesResponse.json();
     const messageId = messagesData[messagesData.length - 1]._id;
     return messageId;
@@ -253,10 +253,11 @@
   // Create a message
   async function createMessage(newMessage) {
     try {
-      const response = await fetch(`http://localhost:3000/messages`, {
+      const response = await fetch(`http://127.0.0.1:3000/messages`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${jwt}`
         },
         body: JSON.stringify({ text: newMessage }),
       });
@@ -280,10 +281,11 @@
     console.log(`Message ID: ${messageId}`);
     console.log (`Room ID: ${roomId}`);
     try {
-      const response = await fetch(`http://localhost:3000/rooms/${roomId}/message/${messageId}`, {
+      const response = await fetch(`http://127.0.0.1:3000/rooms/${roomId}/message/${messageId}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${jwt}`
         }
       });
 
