@@ -5,9 +5,13 @@
 
   let action: string = ''; // Default to registration
   let username: string = ''; // Store the username
+  let userIdNum = ''; // Store the user ID
   let email: string = ''; // Store the email
   let password: string = ''; // Store the password
   let isLoggedIn: boolean = false; // Store the logged in status
+  let newRoomName = ''; // Store the new room name
+  let rooms = []; // Store the list of rooms
+  let roomIdNum = ''; // Store the room ID
   let selectedRoom: string | null = null; // Store the selected room
   let messages = []; // Store messages for the room
   let newMessage = ''; // Store the new message text
@@ -61,6 +65,7 @@
           // Set isLoggedIn to true upon successful login
           isLoggedIn = true;
           jwt = Cookies.get('jwt');
+          username = formData.username;
         } else {
           // Show a success message for registration
           console.log('User registered successfully');
@@ -75,13 +80,14 @@
   }
 
   // Handle going back to the login/registration screen
-  function handleBack() {
+  function handleBackLogin() {
     action = ''; // Reset the action to empty when going back
   }
 
-  // Get the list of rooms
-  // Add a variable to store the list of rooms
-  let rooms = [];
+  // Handle going back to the room selection screen
+  function handleBackRoom() {
+    selectedRoom = null; // Reset the selected room to null when going back
+  }
 
   // Fetch the list of rooms when the page loads
   async function fetchRooms() {
@@ -96,13 +102,6 @@
       console.error('Error fetching rooms:', error);
     }
   }
-
-  // Call the fetchRooms function to load the list of rooms
-  fetchRooms();
-
-  // Create new room
-  // Add a variable to store the name of the new room
-  let newRoomName = '';
 
   async function handleCreateRoom(event) {
     event.preventDefault();
@@ -132,6 +131,7 @@
       const response = await fetch('http://127.0.0.1:3000/rooms');
       if (response.status === 200) {
         const roomsData = await response.json();
+        
         // Update the rooms list with the new data
         rooms = roomsData;
         newRoomName = ''; // Clear the input field
@@ -150,7 +150,10 @@
       if (response.ok) {
         const userData = await response.json();
         const userId = userData._id;
+
+        userIdNum = userId;
         console.log('User ID:', userId)
+
         return userId;
       } else {
         console.error('Error fetching user ID');
@@ -169,9 +172,10 @@
       if (response.ok) {
         const roomData = await response.json();
         const roomId = roomData._id;
+
+        roomIdNum = roomId;
         console.log('Room ID:', roomId);
         
-        // Now that you have the roomId, you can call joinRoom with both roomId and userId
         joinRoom(roomId, userId); 
         fetchMessages(roomId);
       } else {
@@ -203,6 +207,8 @@
         // Handle a successful join, e.g., show a message or update the UI
         console.log(`Joined room ${roomId}`);
         selectRoom(roomId);
+        messages = [];
+        fetchMessages(selectedRoom);
       } else {
         // Handle errors if the join request fails
         console.error('Error joining the room');
@@ -223,11 +229,18 @@
       const response = await fetch(`http://127.0.0.1:3000/room/${roomId}/messages`);
       if (response.ok) {
         const messageData = await response.json();
+
         // for each message in messageData, fetch the message text
         for (const message of messageData) {
           const messageData = await fetchMessageData(message);
+
           // Add the message text to the messages array
           messages = [...messages, { text: messageData.text, userId: messageData.userId }];
+          console.log(`Messages: ${messages}`);
+
+          for (const message of messages) {
+            console.log(`Message: ${message.text}`);
+          }
         }
       } else {
         console.error('Error fetching messages');
@@ -243,8 +256,7 @@
       const response = await fetch(`http://127.0.0.1:3000/messages/${messageId}`);
       if (response.ok) {
         const messageData = await response.json();
-        // const messageText = messageData.text;
-        // console.log(`Message text: ${messageText}`);
+    
         return messageData;
       } else {
         console.error('Error fetching message text');
@@ -326,6 +338,10 @@
     }
   }
 
+  function goBack() {
+    selectedRoom = null;
+  }
+
 </script>
 
 <div class="container buttonContainer">
@@ -356,7 +372,7 @@
     </div>
 
     <div class="container buttonContainer">
-      <button class="margin-right" on:click={handleBack}>Back</button>
+      <button class="margin-right" on:click={handleBackLogin}>Back</button>
       <button type="submit">{action === 'register' ? 'Register' : 'Login'}</button>
     </div>
       
@@ -407,6 +423,7 @@
       </ul>
       <form on:submit={setMessage}>
         <input type="text" placeholder="Type your message" bind:value={newMessage} />
+        <button class="margin-right" on:click={handleBackRoom}>Leave Room</button>
         <button type="submit">Send</button>
       </form>
     </div>
@@ -414,7 +431,6 @@
 {:else}
   <p></p>
 {/if}
-
 
 <style>
   .container {
