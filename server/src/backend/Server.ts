@@ -7,6 +7,7 @@ import { Server as SocketIOServer } from 'socket.io';
 import mongoose from "mongoose";
 import authenticateToken from "./middleware/authMiddleware";
 import cookieParser from "cookie-parser";
+import 'dotenv/config';
 
 import { MongoUserController } from "./controllers/userController";
 import { MongoRoomController } from "./controllers/roomsController";
@@ -33,13 +34,13 @@ export class Server {
     this.app = express();
     this.app.use(cookieParser());
 		this.app.use(helmet());
-		this.app.use(cors({ credentials: true, origin: 'http://127.0.0.1:5173' }));
+		this.app.use(cors({ credentials: true, origin: process.env.CLIENT_URL }));
 		this.app.use(json());
 		this.app.use(urlencoded({ extended: true }));
     this.httpServer = http.createServer(this.app);
     this.io = new SocketIOServer(this.httpServer, {
       cors: {
-        origin: "http://127.0.0.1:5173", // Specify your frontend's origin here
+        origin: process.env.CLIENT_URL, // Specify your frontend's origin here
         methods: ["GET", "POST"],
         credentials: true
       }
