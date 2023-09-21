@@ -1,5 +1,7 @@
 <script lang="ts">
   import Cookies from 'js-cookie';
+  import io from 'socket.io-client';
+  import { onMount } from 'svelte';
 
   let action: string = ''; // Default to registration
   let username: string = ''; // Store the username
@@ -10,6 +12,23 @@
   let messages = []; // Store messages for the room
   let newMessage = ''; // Store the new message text
   let jwt = ''; // Store the JWT
+  const socket = io('http://127.0.0.1:3000')
+
+   // Emit a chat message to the server
+  async function sendChatMessage(text: string) {
+    socket.emit('chatMessage', { text });
+  }
+
+  // Listen for incoming chat messages from the server
+  socket.on('chatMessage', (message) => {
+    console.log('Received message from server:', message);
+    messages = [...messages, { text: message.text, userId: message.userId }];
+  });
+
+  // Fetch the list of rooms when the component mounts
+  onMount(() => {
+    fetchRooms();
+  });
 
   // Handle registration and login
   async function handleSubmit(event) {
@@ -87,6 +106,7 @@
 
   async function handleCreateRoom(event) {
     event.preventDefault();
+    jwt = Cookies.get('jwt');
 
     try {
       const response = await fetch('http://127.0.0.1:3000/rooms', {
@@ -142,12 +162,13 @@
 
   // Get room _id from the DB
   async function fetchRoomId(roomId) {
+  try {
     const userId = await fetchUserId();
-    try {
+    if (userId) {
       const response = await fetch(`http://127.0.0.1:3000/room/${roomId}`);
       if (response.ok) {
         const roomData = await response.json();
-        const roomId = roomData._id; // Access the _id field from the response data
+        const roomId = roomData._id;
         console.log('Room ID:', roomId);
         
         // Now that you have the roomId, you can call joinRoom with both roomId and userId
@@ -156,10 +177,13 @@
       } else {
         console.error('Error fetching room ID');
       }
-    } catch (error) {
-      console.error('Error fetching room ID:', error);
+    } else {
+      console.error('User ID not available.');
     }
+  } catch (error) {
+    console.error('Error fetching room ID:', error);
   }
+}
 
   // Join a room
   async function joinRoom(roomId, userId) {
@@ -169,7 +193,7 @@
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${jwt}`
+          'credentials': 'include',
         },
         // You may need to include some user information in the request body
         body: JSON.stringify({ userId: userId }), // Replace userId with the actual user ID
@@ -201,9 +225,9 @@
         const messageData = await response.json();
         // for each message in messageData, fetch the message text
         for (const message of messageData) {
-          const messageText = await fetchMessageText(message);
+          const messageData = await fetchMessageData(message);
           // Add the message text to the messages array
-          messages = [...messages, { text: messageText }];
+          messages = [...messages, { text: messageData.text, userId: messageData.userId }];
         }
       } else {
         console.error('Error fetching messages');
@@ -214,14 +238,14 @@
   }
 
   // Fetch message text
-  async function fetchMessageText(messageId) {
+  async function fetchMessageData(messageId) {
     try {
       const response = await fetch(`http://127.0.0.1:3000/messages/${messageId}`);
       if (response.ok) {
         const messageData = await response.json();
-        const messageText = messageData.text;
-        console.log(`Message text: ${messageText}`);
-        return messageText;
+        // const messageText = messageData.text;
+        // console.log(`Message text: ${messageText}`);
+        return messageData;
       } else {
         console.error('Error fetching message text');
       }
@@ -235,6 +259,9 @@
     newMessage = event.target[0].value;
     console.log(`New message: ${newMessage}`);
     createMessage(newMessage);
+
+    // Send the message to the server
+    sendChatMessage(newMessage);
   }
 
   function refreshMessages() {
@@ -252,6 +279,7 @@
 
   // Create a message
   async function createMessage(newMessage) {
+    jwt = Cookies.get('jwt');
     try {
       const response = await fetch(`http://127.0.0.1:3000/messages`, {
         method: 'POST',
@@ -259,7 +287,7 @@
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${jwt}`
         },
-        body: JSON.stringify({ text: newMessage }),
+        body: JSON.stringify({ text: newMessage, userId: username }),
       });
 
       if (response.ok) {
@@ -280,6 +308,7 @@
   async function addMessage(roomId, messageId) {
     console.log(`Message ID: ${messageId}`);
     console.log (`Room ID: ${roomId}`);
+    jwt = Cookies.get('jwt');
     try {
       const response = await fetch(`http://127.0.0.1:3000/rooms/${roomId}/message/${messageId}`, {
         method: 'POST',
@@ -289,13 +318,9 @@
         }
       });
 
-      if (response.ok) {
-        // Clear the input field and refresh messages
-        newMessage = '';
-        refreshMessages();
-      } else {
-        console.error('Error adding message');
-      }
+      newMessage = '';
+      refreshMessages();
+      
     } catch (error) {
       console.error('Error adding message:', error);
     }
@@ -377,7 +402,7 @@
       <h2>Chat Room</h2>
       <ul>
         {#each messages as message}
-          <li>{username}: {message.text}</li>
+          <li>{message.userId}: {message.text}</li>
         {/each}
       </ul>
       <form on:submit={setMessage}>
