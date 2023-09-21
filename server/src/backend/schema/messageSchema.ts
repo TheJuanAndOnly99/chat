@@ -6,6 +6,7 @@ import { MessageId } from "../../Messages/domain/MessageId";
 export interface IMessage extends mongoose.Document {
   Uid: MessageId,
   text: string,
+  userId: string,
 }
 
 // Message schema for mongoose
@@ -16,6 +17,9 @@ export const MessageSchema = new mongoose.Schema<IMessage>({
   text: {
     type: String,
   },
+  userId: {
+    type: String,
+  }
 },
 {
   timestamps: true,

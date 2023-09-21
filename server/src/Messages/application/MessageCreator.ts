@@ -9,10 +9,11 @@ export class MessageCreator {
 	constructor(private readonly repository: MessageRepository) {}
 
   // Create and store new room
-	async create({ Uid, text }: MessageCreatorRequest): Promise<void> {
+	async create({ Uid, text, userId }: MessageCreatorRequest): Promise<void> {
 		const message = new Message(
 			new MessageId(Uid),
-      text
+      text,
+			userId
 		);
 		await this.repository.create(message);
 	}

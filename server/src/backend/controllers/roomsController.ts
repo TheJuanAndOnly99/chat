@@ -93,7 +93,6 @@ export class MongoRoomController {
   async getAllMessages(req: Request, res: Response): Promise<void> {
     const { roomId } = req.params; // Updated parameter names
     const messages = await this.repository.getAllMessages(roomId);
-    console.log('Messages:', messages);
     res.status(200).send(messages);
   }
 }

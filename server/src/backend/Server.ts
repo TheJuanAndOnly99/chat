@@ -3,8 +3,10 @@ import cors from "cors";
 import express, { Application, Request, Response, Router } from "express";
 import helmet from "helmet";
 import * as http from "http";
-import socketIO, { Server as SocketIOServer } from 'socket.io';
+import { Server as SocketIOServer } from 'socket.io';
 import mongoose from "mongoose";
+import authenticateToken from "./middleware/authMiddleware";
+import cookieParser from "cookie-parser";
 
 import { MongoUserController } from "./controllers/userController";
 import { MongoRoomController } from "./controllers/roomsController";
@@ -29,13 +31,34 @@ export class Server {
 
   constructor(private readonly port: string | number) {
     this.app = express();
+    this.app.use(cookieParser());
 		this.app.use(helmet());
-		this.app.use(cors());
+		this.app.use(cors({ credentials: true, origin: 'http://127.0.0.1:5173' }));
 		this.app.use(json());
 		this.app.use(urlencoded({ extended: true }));
     this.httpServer = http.createServer(this.app);
-    this.io = new socketIO.Server(this.httpServer);
-    this.port = process.env.PORT || 3000;
+    this.io = new SocketIOServer(this.httpServer, {
+      cors: {
+        origin: "http://127.0.0.1:5173", // Specify your frontend's origin here
+        methods: ["GET", "POST"],
+        credentials: true
+      }
+    });
+    this.port = 3000;
+
+    // Handle Socket.IO connections
+    this.io?.on('connection', (socket) => {
+      console.log('A user connected.');
+
+      socket.on('chatMessage', (message) => {
+        console.log(`Received message: ${message}`);
+        this.io?.emit('chatMessage', message); // Broadcast the message to all clients
+      });
+
+      socket.on('disconnect', () => {
+        console.log('A user disconnected.');
+      });
+    });
 
 		const userModel = mongoose.model<User>('User', UserSchema);
     const roomModel = mongoose.model<Room>('Room', RoomSchema);
@@ -54,6 +77,8 @@ export class Server {
     const messageController = new MongoMessageController(messageRepository, messageCreator);
 
 		const router = Router();
+    router.post('/login', userController.login.bind(userController));
+
 		router.post('/users', userController.create.bind(userController));
     router.get('/users', userController.findAll.bind(userController));
     router.get('/users/:Uid', userController.findById.bind(userController));
@@ -63,7 +88,7 @@ export class Server {
     router.get('/rooms', roomController.findAll.bind(roomController));
     router.get('/rooms/:Uid', roomController.findById.bind(roomController));
     router.get('/room/:Name', roomController.findByName.bind(roomController));
-    router.post('/rooms', roomController.create.bind(roomController));
+    router.post('/rooms', authenticateToken, roomController.create.bind(roomController));
     router.delete('/rooms/:Uid', roomController.delete.bind(roomController));
     router.post('/rooms/:roomId/user/:userId', roomController.addUser.bind(roomController));
     router.delete('/rooms/:roomId/:userId', roomController.removeUser.bind(roomController));
@@ -72,14 +97,29 @@ export class Server {
 
     router.get('/messages', messageController.findAll.bind(messageController));
     router.get('/messages/:Uid', messageController.findById.bind(messageController));
-    router.post('/messages', messageController.create.bind(messageController));
-    router.delete('/messages/:Uid', messageController.delete.bind(messageController));
-		this.app.use(router);
+    // router.post('/messages', messageController.create.bind(messageController));
 
+    router.post('/messages', async (req: Request, res: Response) => {
+      try {
+        // Create a new message
+        const newMessage = await messageController.create(req, res);
+    
+        // Emit the new message to all connected clients
+        this.io?.emit('chatMessage', newMessage);
+    
+        res.status(201).send(newMessage);
+      } catch (error) {
+        console.error('Error creating message:', error);
+        res.status(500).json({ error: 'Internal server error' });
+      }
+    });
+
+    router.delete('/messages/:Uid', messageController.delete.bind(messageController));
+		
+    this.app.use(router);
 		this.registerRoutes(router, this.io);
     this.initializeMiddlewares();
     this.initializeRoutes();
-    // this.initializeSockets();
     this.connectToDatabase();
   }
 
@@ -97,25 +137,6 @@ export class Server {
       res.send('Hello, this is the chat application!');
     });
   }
-
-  // private initializeSockets(): void {
-  //   this.io?.on("connection", (socket) => {
-  //     console.log("A user connected.");
-
-  //     // Handle incoming chat messages
-  //     socket.on("chatMessage", (message) => {
-  //       console.log("Received message:", message);
-
-  //       // Broadcast the message to all connected clients (including sender)
-  //       this.io?.emit("chatMessage", message);
-  //     });
-
-  //     // Handle user disconnection
-  //     socket.on("disconnect", () => {
-  //       console.log("A user disconnected.");
-  //     });
-  //   });
-  // }
 
   private connectToDatabase(): void {
 		mongoose

@@ -15,9 +15,9 @@ export class MongoMessageController {
 
   async create(req: Request, res: Response): Promise<void> {
     try {
-    const { Uid, text } = req.body as MessageCreatorRequest;
+    const { Uid, text, userId } = req.body as MessageCreatorRequest;
 
-    const createdMessage = await this.creator.create({ Uid, text });
+    const createdMessage = await this.creator.create({ Uid, text, userId });
     
     res.status(201).json(createdMessage);
     } catch (error) {

@@ -2,4 +2,5 @@
 export type MessageCreatorRequest = {
   Uid: string,
   text: string,
+  userId: string,
 };
