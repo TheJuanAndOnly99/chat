@@ -9,7 +9,7 @@ export interface IUser extends mongoose.Document {
   Uid: UserId,
   username: UserName,
   email: UserEmail,
-  password?: UserPassword,
+  password: UserPassword,
 }
 
 // User schema for mongoose
