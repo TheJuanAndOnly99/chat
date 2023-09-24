@@ -266,9 +266,9 @@
     }
   }
 
-  function setMessage(event: Event) {
-    event.preventDefault();
-    newMessage = event.target[0].value;
+  function setMessage(event: Event | null) {
+    event?.preventDefault();
+    newMessage = event.target[0].value || '';
     console.log(`New message: ${newMessage}`);
     createMessage(newMessage);
 
