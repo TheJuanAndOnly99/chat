@@ -5,19 +5,20 @@
 
   let action: string = ''; // Default to registration
   let username: string = ''; // Store the username
-  let userIdNum = ''; // Store the user ID
+  let userIdNum: string = ''; // Store the user ID
   let email: string = ''; // Store the email
   let password: string = ''; // Store the password
   let isLoggedIn: boolean = false; // Store the logged in status
-  let newRoomName = ''; // Store the new room name
+  let newRoomName: string = ''; // Store the new room name
   let rooms: { id: number, name: string }[] = []; // Store the list of rooms
-  let roomIdNum = ''; // Store the room ID
+  let roomName: string = ''; // Store the room Name
+  let roomIdNum: string = ''; // Store the room ID
   let selectedRoom: string | null = null; // Store the selected room
   let messages: { text: string, userId: string }[] = []; // Store messages for the room
   let newMessage: string | null = ''; // Store the new message text
   let jwt: string | undefined = ''; // Store the JWT
   
-  const SERVER_URL="http://127.0.0.1:3000"
+  const SERVER_URL = "http://127.0.0.1:3000"
   const socket = io(SERVER_URL)
 
    // Emit a chat message to the server
@@ -120,8 +121,9 @@
         },
         body: JSON.stringify({ name: newRoomName }),
       });
-
+      console.log("before refresh")
       refreshRooms();
+      console.log("after refresh")
 
     } catch (error) {
       console.error('Error creating a room:', error);
@@ -175,8 +177,10 @@
       if (response.ok) {
         const roomData = await response.json();
         const roomId = roomData._id;
-
+        
+        roomName = roomData.name;
         roomIdNum = roomId;
+
         console.log('Room ID:', roomId);
         
         joinRoom(roomId, userId); 
@@ -340,10 +344,6 @@
     }
   }
 
-  function goBack() {
-    selectedRoom = null;
-  }
-
 </script>
 
 <div class="container buttonContainer">
@@ -385,8 +385,7 @@
 {#if isLoggedIn}
   <div class="chat-room">
     <div>
-      <div>
-        <h2>Chat Room</h2>
+      <div class="flex">
         <p>Logged in as {username}</p>
         <button on:click={() => isLoggedIn = false}>Logout</button>
       </div>
@@ -394,15 +393,16 @@
         <h3>Select Chat Room</h3>
         <ul>
           {#each rooms as room}
-            <li>
+            <li class="roomsList">
               {room.name} 
               <button on:click={() => {
                 fetchRoomId(room.name); // Fetch room ID and pass 'roomId' as a parameter
               }}>
-                Join
+                Join Room
               </button>
             </li>
           {/each}
+          <button class="margin-right margin-top" on:click={refreshRooms}>Refresh Rooms</button>
         </ul>
         <h4>Create New Room</h4>
         <form on:submit={handleCreateRoom}>
@@ -417,7 +417,7 @@
 {#if selectedRoom !== null }
   <div class="chat-room">
     <div>
-      <h2>Chat Room</h2>
+      <h3>Room: {roomName}</h3>
       <ul>
         {#each messages as message}
           <li>{message.userId}: {message.text}</li>
@@ -456,6 +456,24 @@
 
   .margin-right{
     margin-right: 1em;
+  }
+
+  .margin-top {
+    margin-top: 1em;
+  }
+
+  .roomsList{
+    margin-bottom: .5em;
+    list-style-type: none;
+  }
+
+  .flex {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  p, h1, h2, h3, h4, h5, h6, li {
+    font-size: 1.5em;
   }
 
 </style>
