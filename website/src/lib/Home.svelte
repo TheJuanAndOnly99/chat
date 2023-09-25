@@ -5,21 +5,24 @@
 
   let action: string = ''; // Default to registration
   let username: string = ''; // Store the username
-  let userIdNum = ''; // Store the user ID
+  let userIdNum: string = ''; // Store the user ID
   let email: string = ''; // Store the email
   let password: string = ''; // Store the password
   let isLoggedIn: boolean = false; // Store the logged in status
-  let newRoomName = ''; // Store the new room name
-  let rooms = []; // Store the list of rooms
-  let roomIdNum = ''; // Store the room ID
+  let newRoomName: string = ''; // Store the new room name
+  let rooms: { id: number, name: string }[] = []; // Store the list of rooms
+  let roomName: string = ''; // Store the room Name
+  let roomIdNum: string = ''; // Store the room ID
   let selectedRoom: string | null = null; // Store the selected room
-  let messages = []; // Store messages for the room
-  let newMessage = ''; // Store the new message text
-  let jwt = ''; // Store the JWT
-  const socket = io('http://127.0.0.1:3000')
+  let messages: { text: string, userId: string }[] = []; // Store messages for the room
+  let newMessage: string | null = ''; // Store the new message text
+  let jwt: string | undefined = ''; // Store the JWT
+  
+  const SERVER_URL = "http://127.0.0.1:3000"
+  const socket = io(SERVER_URL)
 
    // Emit a chat message to the server
-  async function sendChatMessage(text: string) {
+  async function sendChatMessage(text: string | null) {
     socket.emit('chatMessage', { text });
   }
 
@@ -35,17 +38,18 @@
   });
 
   // Handle registration and login
-  async function handleSubmit(event) {
+  async function handleSubmit(event: Event) {
     event.preventDefault();
 
     const formData = { username, email, password };
 
-    let url = 'http://127.0.0.1:3000/users';
+    let url = `${SERVER_URL}/users`;
     let method = 'POST'; // Default to POST for registration
     let body = JSON.stringify(formData);
 
     if (action === 'login') {
-      url = `http://127.0.0.1:3000/login/`;
+      url = `${SERVER_URL}/login`;
+      console.log(url);
       body = JSON.stringify({ username });
     }
 
@@ -92,7 +96,7 @@
   // Fetch the list of rooms when the page loads
   async function fetchRooms() {
     try {
-      const response = await fetch('http://127.0.0.1:3000/rooms');
+      const response = await fetch(`${SERVER_URL}/rooms`);
       if (response.ok) {
         rooms = await response.json();
       } else {
@@ -103,12 +107,12 @@
     }
   }
 
-  async function handleCreateRoom(event) {
+  async function handleCreateRoom(event: Event) {
     event.preventDefault();
     jwt = Cookies.get('jwt');
 
     try {
-      const response = await fetch('http://127.0.0.1:3000/rooms', {
+      const response = await fetch(`${SERVER_URL}/rooms`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -117,8 +121,9 @@
         },
         body: JSON.stringify({ name: newRoomName }),
       });
-
+      console.log("before refresh")
       refreshRooms();
+      console.log("after refresh")
 
     } catch (error) {
       console.error('Error creating a room:', error);
@@ -128,7 +133,7 @@
   // Add a function to refresh the list of rooms
   async function refreshRooms() {
     try {
-      const response = await fetch('http://127.0.0.1:3000/rooms');
+      const response = await fetch(`${SERVER_URL}/rooms`);
       if (response.status === 200) {
         const roomsData = await response.json();
         
@@ -146,7 +151,7 @@
   // Get user _id from the DB
   async function fetchUserId() {
     try {
-      const response = await fetch(`http://127.0.0.1:3000/user/${username}`);
+      const response = await fetch(`${SERVER_URL}/user/${username}`);
       if (response.ok) {
         const userData = await response.json();
         const userId = userData._id;
@@ -164,16 +169,18 @@
   }
 
   // Get room _id from the DB
-  async function fetchRoomId(roomId) {
+  async function fetchRoomId(roomId: string) {
   try {
     const userId = await fetchUserId();
     if (userId) {
-      const response = await fetch(`http://127.0.0.1:3000/room/${roomId}`);
+      const response = await fetch(`${SERVER_URL}/room/${roomId}`);
       if (response.ok) {
         const roomData = await response.json();
         const roomId = roomData._id;
-
+        
+        roomName = roomData.name;
         roomIdNum = roomId;
+
         console.log('Room ID:', roomId);
         
         joinRoom(roomId, userId); 
@@ -190,10 +197,10 @@
 }
 
   // Join a room
-  async function joinRoom(roomId, userId) {
+  async function joinRoom(roomId: string, userId: string) {
     try {
       // Send a request to the server to add the user to the selected room
-      const response = await fetch(`http://127.0.0.1:3000/rooms/${roomId}/user/${userId}`, {
+      const response = await fetch(`${SERVER_URL}/rooms/${roomId}/user/${userId}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -224,9 +231,9 @@
   }
 
   // Fetch messages
-  async function fetchMessages(roomId) {
+  async function fetchMessages(roomId: string | null) {
     try {
-      const response = await fetch(`http://127.0.0.1:3000/room/${roomId}/messages`);
+      const response = await fetch(`${SERVER_URL}/room/${roomId}/messages`);
       if (response.ok) {
         const messageData = await response.json();
 
@@ -236,7 +243,6 @@
 
           // Add the message text to the messages array
           messages = [...messages, { text: messageData.text, userId: messageData.userId }];
-          console.log(`Messages: ${messages}`);
 
           for (const message of messages) {
             console.log(`Message: ${message.text}`);
@@ -251,9 +257,9 @@
   }
 
   // Fetch message text
-  async function fetchMessageData(messageId) {
+  async function fetchMessageData(messageId: string) {
     try {
-      const response = await fetch(`http://127.0.0.1:3000/messages/${messageId}`);
+      const response = await fetch(`${SERVER_URL}/messages/${messageId}`);
       if (response.ok) {
         const messageData = await response.json();
     
@@ -266,9 +272,9 @@
     }
   }
 
-  function setMessage(event) {
-    event.preventDefault();
-    newMessage = event.target[0].value;
+  function setMessage(event: Event | null) {
+    event?.preventDefault();
+    newMessage = event.target[0].value || '';
     console.log(`New message: ${newMessage}`);
     createMessage(newMessage);
 
@@ -283,17 +289,17 @@
 
   // Get latest message
   async function getLatestMessage() {
-    const messagesResponse = await fetch(`http://127.0.0.1:3000/messages`);
+    const messagesResponse = await fetch(`${SERVER_URL}/messages`);
     const messagesData = await messagesResponse.json();
     const messageId = messagesData[messagesData.length - 1]._id;
     return messageId;
   }
 
   // Create a message
-  async function createMessage(newMessage) {
+  async function createMessage(newMessage: string | null) {
     jwt = Cookies.get('jwt');
     try {
-      const response = await fetch(`http://127.0.0.1:3000/messages`, {
+      const response = await fetch(`${SERVER_URL}/messages`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -317,12 +323,12 @@
     }
   }
 
-  async function addMessage(roomId, messageId) {
+  async function addMessage(roomId: string | null, messageId: string) {
     console.log(`Message ID: ${messageId}`);
     console.log (`Room ID: ${roomId}`);
     jwt = Cookies.get('jwt');
     try {
-      const response = await fetch(`http://127.0.0.1:3000/rooms/${roomId}/message/${messageId}`, {
+      const response = await fetch(`${SERVER_URL}/rooms/${roomId}/message/${messageId}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -336,10 +342,6 @@
     } catch (error) {
       console.error('Error adding message:', error);
     }
-  }
-
-  function goBack() {
-    selectedRoom = null;
   }
 
 </script>
@@ -383,8 +385,7 @@
 {#if isLoggedIn}
   <div class="chat-room">
     <div>
-      <div>
-        <h2>Chat Room</h2>
+      <div class="flex">
         <p>Logged in as {username}</p>
         <button on:click={() => isLoggedIn = false}>Logout</button>
       </div>
@@ -392,15 +393,16 @@
         <h3>Select Chat Room</h3>
         <ul>
           {#each rooms as room}
-            <li>
+            <li class="roomsList">
               {room.name} 
               <button on:click={() => {
                 fetchRoomId(room.name); // Fetch room ID and pass 'roomId' as a parameter
               }}>
-                Join
+                Join Room
               </button>
             </li>
           {/each}
+          <button class="margin-right margin-top" on:click={refreshRooms}>Refresh Rooms</button>
         </ul>
         <h4>Create New Room</h4>
         <form on:submit={handleCreateRoom}>
@@ -415,7 +417,7 @@
 {#if selectedRoom !== null }
   <div class="chat-room">
     <div>
-      <h2>Chat Room</h2>
+      <h3>Room: {roomName}</h3>
       <ul>
         {#each messages as message}
           <li>{message.userId}: {message.text}</li>
@@ -454,6 +456,24 @@
 
   .margin-right{
     margin-right: 1em;
+  }
+
+  .margin-top {
+    margin-top: 1em;
+  }
+
+  .roomsList{
+    margin-bottom: .5em;
+    list-style-type: none;
+  }
+
+  .flex {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  p, h1, h2, h3, h4, h5, h6, li {
+    font-size: 1.5em;
   }
 
 </style>

@@ -7,6 +7,7 @@ import { Server as SocketIOServer } from 'socket.io';
 import mongoose from "mongoose";
 import authenticateToken from "./middleware/authMiddleware";
 import cookieParser from "cookie-parser";
+import 'dotenv/config'
 
 import { MongoUserController } from "./controllers/userController";
 import { MongoRoomController } from "./controllers/roomsController";
@@ -24,6 +25,8 @@ import { User } from "../Users/domain/User";
 import { Room } from "../Rooms/domain/Room";
 import { Message } from '../Messages/domain/Message';
 
+const clientUrl = process.env.CLIENT_URL;
+
 export class Server {
   private readonly app: Application;
   private httpServer?: http.Server;
@@ -33,13 +36,13 @@ export class Server {
     this.app = express();
     this.app.use(cookieParser());
 		this.app.use(helmet());
-		this.app.use(cors({ credentials: true, origin: 'http://127.0.0.1:5173' }));
+		this.app.use(cors({ credentials: true, origin: clientUrl }));
 		this.app.use(json());
 		this.app.use(urlencoded({ extended: true }));
     this.httpServer = http.createServer(this.app);
     this.io = new SocketIOServer(this.httpServer, {
       cors: {
-        origin: "http://127.0.0.1:5173", // Specify your frontend's origin here
+        origin: clientUrl, // Specify your frontend's origin here
         methods: ["GET", "POST"],
         credentials: true
       }
@@ -98,7 +101,7 @@ export class Server {
     router.get('/messages', messageController.findAll.bind(messageController));
     router.get('/messages/:Uid', messageController.findById.bind(messageController));
     // router.post('/messages', messageController.create.bind(messageController));
-
+    router.delete('/messages/:Uid', messageController.delete.bind(messageController));
     router.post('/messages', async (req: Request, res: Response) => {
       try {
         // Create a new message
@@ -114,8 +117,6 @@ export class Server {
       }
     });
 
-    router.delete('/messages/:Uid', messageController.delete.bind(messageController));
-		
     this.app.use(router);
 		this.registerRoutes(router, this.io);
     this.initializeMiddlewares();
@@ -138,16 +139,16 @@ export class Server {
     });
   }
 
-  private connectToDatabase(): void {
-		mongoose
-			.connect('mongodb://localhost:27017/chat-app')
-			.then(() => {
-				console.log('Connected to MongoDB');
-			})
-			.catch((err) => {
-				console.error('Error connecting to MongoDB:', err);
-			});
-	}
+    private connectToDatabase(): void {
+      mongoose
+        .connect('mongodb://localhost:27017/chat-app')
+        .then(() => {
+          console.log('Connected to MongoDB');
+        })
+        .catch((err: Error) => {
+          console.error('Error connecting to MongoDB:', err);
+        });
+    }
 
   public startServer(): void {
     this.httpServer?.listen(this.port, () => {
