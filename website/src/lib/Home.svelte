@@ -16,8 +16,9 @@
   let messages: { text: string, userId: string }[] = []; // Store messages for the room
   let newMessage: string | null = ''; // Store the new message text
   let jwt: string | undefined = ''; // Store the JWT
-  const serverUrl = import.meta.env.SERVER_URL;
-  const socket = io(serverUrl)
+  
+  const SERVER_URL="http://127.0.0.1:3000"
+  const socket = io(SERVER_URL)
 
    // Emit a chat message to the server
   async function sendChatMessage(text: string | null) {
@@ -41,12 +42,13 @@
 
     const formData = { username, email, password };
 
-    let url = '/users';
+    let url = `${SERVER_URL}/users`;
     let method = 'POST'; // Default to POST for registration
     let body = JSON.stringify(formData);
 
     if (action === 'login') {
-      url = '/login';
+      url = `${SERVER_URL}/login`;
+      console.log(url);
       body = JSON.stringify({ username });
     }
 
@@ -93,7 +95,7 @@
   // Fetch the list of rooms when the page loads
   async function fetchRooms() {
     try {
-      const response = await fetch('http://127.0.0.1:3000/rooms');
+      const response = await fetch(`${SERVER_URL}/rooms`);
       if (response.ok) {
         rooms = await response.json();
       } else {
@@ -109,7 +111,7 @@
     jwt = Cookies.get('jwt');
 
     try {
-      const response = await fetch('http://127.0.0.1:3000/rooms', {
+      const response = await fetch(`${SERVER_URL}/rooms`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -129,7 +131,7 @@
   // Add a function to refresh the list of rooms
   async function refreshRooms() {
     try {
-      const response = await fetch('http://127.0.0.1:3000/rooms');
+      const response = await fetch(`${SERVER_URL}/rooms`);
       if (response.status === 200) {
         const roomsData = await response.json();
         
@@ -147,7 +149,7 @@
   // Get user _id from the DB
   async function fetchUserId() {
     try {
-      const response = await fetch(`http://127.0.0.1:3000/user/${username}`);
+      const response = await fetch(`${SERVER_URL}/user/${username}`);
       if (response.ok) {
         const userData = await response.json();
         const userId = userData._id;
@@ -169,7 +171,7 @@
   try {
     const userId = await fetchUserId();
     if (userId) {
-      const response = await fetch(`http://127.0.0.1:3000/room/${roomId}`);
+      const response = await fetch(`${SERVER_URL}/room/${roomId}`);
       if (response.ok) {
         const roomData = await response.json();
         const roomId = roomData._id;
@@ -194,7 +196,7 @@
   async function joinRoom(roomId: string, userId: string) {
     try {
       // Send a request to the server to add the user to the selected room
-      const response = await fetch(`http://127.0.0.1:3000/rooms/${roomId}/user/${userId}`, {
+      const response = await fetch(`${SERVER_URL}/rooms/${roomId}/user/${userId}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -227,7 +229,7 @@
   // Fetch messages
   async function fetchMessages(roomId: string | null) {
     try {
-      const response = await fetch(`http://127.0.0.1:3000/room/${roomId}/messages`);
+      const response = await fetch(`${SERVER_URL}/room/${roomId}/messages`);
       if (response.ok) {
         const messageData = await response.json();
 
@@ -253,7 +255,7 @@
   // Fetch message text
   async function fetchMessageData(messageId: string) {
     try {
-      const response = await fetch(`http://127.0.0.1:3000/messages/${messageId}`);
+      const response = await fetch(`${SERVER_URL}/messages/${messageId}`);
       if (response.ok) {
         const messageData = await response.json();
     
@@ -283,7 +285,7 @@
 
   // Get latest message
   async function getLatestMessage() {
-    const messagesResponse = await fetch(`http://127.0.0.1:3000/messages`);
+    const messagesResponse = await fetch(`${SERVER_URL}/messages`);
     const messagesData = await messagesResponse.json();
     const messageId = messagesData[messagesData.length - 1]._id;
     return messageId;
@@ -293,7 +295,7 @@
   async function createMessage(newMessage: string | null) {
     jwt = Cookies.get('jwt');
     try {
-      const response = await fetch(`http://127.0.0.1:3000/messages`, {
+      const response = await fetch(`${SERVER_URL}/messages`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -322,7 +324,7 @@
     console.log (`Room ID: ${roomId}`);
     jwt = Cookies.get('jwt');
     try {
-      const response = await fetch(`http://127.0.0.1:3000/rooms/${roomId}/message/${messageId}`, {
+      const response = await fetch(`${SERVER_URL}/rooms/${roomId}/message/${messageId}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
