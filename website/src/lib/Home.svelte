@@ -10,16 +10,17 @@
   let password: string = ''; // Store the password
   let isLoggedIn: boolean = false; // Store the logged in status
   let newRoomName = ''; // Store the new room name
-  let rooms = []; // Store the list of rooms
+  let rooms: { id: number, name: string }[] = []; // Store the list of rooms
   let roomIdNum = ''; // Store the room ID
   let selectedRoom: string | null = null; // Store the selected room
-  let messages = []; // Store messages for the room
-  let newMessage = ''; // Store the new message text
-  let jwt = ''; // Store the JWT
-  const socket = io('http://127.0.0.1:3000')
+  let messages: { text: string, userId: string }[] = []; // Store messages for the room
+  let newMessage: string | null = ''; // Store the new message text
+  let jwt: string | undefined = ''; // Store the JWT
+  const serverUrl = import.meta.env.SERVER_URL;
+  const socket = io(serverUrl)
 
    // Emit a chat message to the server
-  async function sendChatMessage(text: string) {
+  async function sendChatMessage(text: string | null) {
     socket.emit('chatMessage', { text });
   }
 
@@ -35,17 +36,17 @@
   });
 
   // Handle registration and login
-  async function handleSubmit(event) {
+  async function handleSubmit(event: Event) {
     event.preventDefault();
 
     const formData = { username, email, password };
 
-    let url = 'http://127.0.0.1:3000/users';
+    let url = `${serverUrl}/users`;
     let method = 'POST'; // Default to POST for registration
     let body = JSON.stringify(formData);
 
     if (action === 'login') {
-      url = `http://127.0.0.1:3000/login/`;
+      url = `${serverUrl}/login/`;
       body = JSON.stringify({ username });
     }
 
@@ -103,7 +104,7 @@
     }
   }
 
-  async function handleCreateRoom(event) {
+  async function handleCreateRoom(event: Event) {
     event.preventDefault();
     jwt = Cookies.get('jwt');
 
@@ -164,7 +165,7 @@
   }
 
   // Get room _id from the DB
-  async function fetchRoomId(roomId) {
+  async function fetchRoomId(roomId: string) {
   try {
     const userId = await fetchUserId();
     if (userId) {
@@ -190,7 +191,7 @@
 }
 
   // Join a room
-  async function joinRoom(roomId, userId) {
+  async function joinRoom(roomId: string, userId: string) {
     try {
       // Send a request to the server to add the user to the selected room
       const response = await fetch(`http://127.0.0.1:3000/rooms/${roomId}/user/${userId}`, {
@@ -224,7 +225,7 @@
   }
 
   // Fetch messages
-  async function fetchMessages(roomId) {
+  async function fetchMessages(roomId: string | null) {
     try {
       const response = await fetch(`http://127.0.0.1:3000/room/${roomId}/messages`);
       if (response.ok) {
@@ -250,7 +251,7 @@
   }
 
   // Fetch message text
-  async function fetchMessageData(messageId) {
+  async function fetchMessageData(messageId: string) {
     try {
       const response = await fetch(`http://127.0.0.1:3000/messages/${messageId}`);
       if (response.ok) {
@@ -265,9 +266,9 @@
     }
   }
 
-  function setMessage(event) {
-    event.preventDefault();
-    newMessage = event.target[0].value;
+  function setMessage(event: Event | null) {
+    event?.preventDefault();
+    newMessage = event.target[0].value || '';
     console.log(`New message: ${newMessage}`);
     createMessage(newMessage);
 
@@ -289,7 +290,7 @@
   }
 
   // Create a message
-  async function createMessage(newMessage) {
+  async function createMessage(newMessage: string | null) {
     jwt = Cookies.get('jwt');
     try {
       const response = await fetch(`http://127.0.0.1:3000/messages`, {
@@ -316,7 +317,7 @@
     }
   }
 
-  async function addMessage(roomId, messageId) {
+  async function addMessage(roomId: string | null, messageId: string) {
     console.log(`Message ID: ${messageId}`);
     console.log (`Room ID: ${roomId}`);
     jwt = Cookies.get('jwt');
