@@ -41,12 +41,12 @@
 
     const formData = { username, email, password };
 
-    let url = `${serverUrl}/users`;
+    let url = '/users';
     let method = 'POST'; // Default to POST for registration
     let body = JSON.stringify(formData);
 
     if (action === 'login') {
-      url = `${serverUrl}/login/`;
+      url = '/login';
       body = JSON.stringify({ username });
     }
 
