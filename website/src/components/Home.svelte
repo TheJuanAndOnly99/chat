@@ -21,17 +21,6 @@
   const SERVER_URL = "http://127.0.0.1:3000"
   const socket = io(SERVER_URL)
 
-   // Emit a chat message to the server
-  async function sendChatMessage(text: string | null) {
-    socket.emit('chatMessage', { text });
-  }
-
-  // Listen for incoming chat messages from the server
-  socket.on('chatMessage', (message) => {
-    console.log('Received message from server:', message);
-    messages = [...messages, { text: message.text, userId: message.userId }];
-  });
-
   // Fetch the list of rooms when the component mounts
   onMount(() => {
     fetchRooms();
@@ -91,7 +80,7 @@
   // Handle going back to the room selection screen
   function handleBackRoom() {
     selectedRoom = null; // Reset the selected room to null when going back
-
+    
     // remove user from room
     removeUserFromRoom(roomIdNum, userIdNum);
   }
@@ -313,6 +302,17 @@
     // Send the message to the server
     sendChatMessage(newMessage);
   }
+
+  // Emit a chat message to the server
+  async function sendChatMessage(text: string | null) {
+    socket.emit('chatMessage', { text });
+  }
+
+  // Listen for incoming chat messages from the server
+  socket.on('chatMessage', (message) => {
+    console.log('Received message from server:', message);
+    messages = [...messages, { text: message.text, userId: message.userId }];
+  });
 
   function refreshMessages() {
     messages = [];
