@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 
-import { MessageCreator } from '../../Messages/application/MessageCreator';
-import { MessageCreatorRequest } from '../../Messages/application/requests/MessageCreatorRequest';
+import { MessageCreator } from '../models/Messages/application/MessageCreator';
+import { MessageCreatorRequest } from '../models/Messages/application/requests/MessageCreatorRequest';
 import { MongoMessageRepository } from '../repositories/messageRepository';
 
 export class MongoMessageController {
