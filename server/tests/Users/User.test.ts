@@ -1,10 +1,10 @@
-import { User } from "../../src/Users/domain/User";
-import { UserId } from "../../src/Users/domain/UserId";
-import { UserName } from "../../src/Users/domain/UserName";
-import { UserCreator } from "../../src/Users/application/UserCreator";
-import { UserRepository } from "../../src/Users/domain/UserRepository";
-import { UserEmail, UserEmailIsNotValid } from "../../src/Users/domain/UserEmail";
-import { UserPassword, UserPasswordNotValid } from "../../src/Users/domain/UserPassword";
+import { User } from "../../src/backend/models/Users/domain/User";
+import { UserId } from "../../src/backend/models/Users/domain/UserId";
+import { UserName } from "../../src/backend/models/Users/domain/UserName";
+import { UserCreator } from "../../src/backend/models/Users/application/UserCreator";
+import { UserRepository } from "../../src/backend/models/Users/domain/UserRepository";
+import { UserEmail, UserEmailIsNotValid } from "../../src/backend/models/Users/domain/UserEmail";
+import { UserPassword, UserPasswordNotValid } from "../../src/backend/models/Users/domain/UserPassword";
 import { mock, MockProxy } from "jest-mock-extended";
 import bcrypt from "bcrypt";
 
