@@ -14,7 +14,7 @@
   let roomName: string = ''; // Store the room Name
   let roomIdNum: string = ''; // Store the room ID
   let selectedRoom: string | null = null; // Store the selected room
-  let messages: { text: string, userId: string }[] = []; // Store messages for the room
+  let messages: { text: string, userId: string, createdAt: string }[] = []; // Store messages for the room
   let newMessage: string | null = ''; // Store the new message text
   let jwt: string | undefined = ''; // Store the JWT
   
@@ -91,6 +91,34 @@
   // Handle going back to the room selection screen
   function handleBackRoom() {
     selectedRoom = null; // Reset the selected room to null when going back
+
+    // remove user from room
+    removeUserFromRoom(roomIdNum, userIdNum);
+  }
+
+  // Remove user from room
+  async function removeUserFromRoom(roomId: string, userId: string) {
+    try {
+      const response = await fetch(`${SERVER_URL}/rooms/${roomId}/user/${userId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'credentials': 'include',
+        },
+        // You may need to include some user information in the request body
+        body: JSON.stringify({ userId: userId }), // Replace userId with the actual user ID
+      });
+
+      if (response.ok) {
+        // Handle a successful leave, e.g., show a message or update the UI
+        console.log(`Left room ${roomId}`);
+      } else {
+        // Handle errors if the leave request fails
+        console.error('Error leaving the room');
+      }
+    } catch (error) {
+      console.error('Error leaving the room:', error);
+    }
   }
 
   // Fetch the list of rooms when the page loads
@@ -241,8 +269,12 @@
         for (const message of messageData) {
           const messageData = await fetchMessageData(message);
 
+          // format createdAt date to be more readable
+          const date = new Date(messageData.createdAt);
+          const formattedDate = date.toLocaleString();
+
           // Add the message text to the messages array
-          messages = [...messages, { text: messageData.text, userId: messageData.userId }];
+          messages = [...messages, { text: messageData.text, userId: messageData.userId, createdAt: formattedDate }];
 
           for (const message of messages) {
             console.log(`Message: ${message.text}`);
@@ -346,7 +378,7 @@
 
 </script>
 
-<div class="container buttonContainer">
+<div class="container flex-space-around">
   {#if !isLoggedIn && action === ''}
     <button on:click={() => action = 'register'}>Register</button>
     <button on:click={() => action = 'login'}>Login</button>
@@ -373,7 +405,7 @@
       <input type="password" id="password" bind:value={password} />
     </div>
 
-    <div class="container buttonContainer">
+    <div class="container flex-space-around">
       <button class="margin-right" on:click={handleBackLogin}>Back</button>
       <button type="submit">{action === 'register' ? 'Register' : 'Login'}</button>
     </div>
@@ -385,58 +417,85 @@
 {#if isLoggedIn}
   <div class="chat-room">
     <div>
-      <div class="flex">
+      <div class="flex-space-around border">
         <p>Logged in as {username}</p>
         <button on:click={() => isLoggedIn = false}>Logout</button>
       </div>
-      <div>
-        <h3>Select Chat Room</h3>
-        <ul>
-          {#each rooms as room}
-            <li class="roomsList">
-              {room.name} 
-              <button on:click={() => {
-                fetchRoomId(room.name); // Fetch room ID and pass 'roomId' as a parameter
-              }}>
-                Join Room
-              </button>
-            </li>
-          {/each}
-          <button class="margin-right margin-top" on:click={refreshRooms}>Refresh Rooms</button>
-        </ul>
-        <h4>Create New Room</h4>
-        <form on:submit={handleCreateRoom}>
-          <input type="text" placeholder="Room Name" bind:value={newRoomName} />
-          <button type="submit">Create</button>
-        </form>
+      <div class="flex flex-row">
+        {#if selectedRoom === null}
+          <div class="flex flex-row">
+            <div class="border-right">
+              <h3>Select Chat Room</h3>
+              <ul>
+                {#each rooms as room}
+                  <li class="rooms-list">
+                    {room.name} 
+                    <button on:click={() => {
+                      fetchRoomId(room.name); // Fetch room ID and pass 'roomId' as a parameter
+                    }}>
+                      Join Room
+                    </button>
+                  </li>
+                {/each}
+                <button class="margin-right margin-top" on:click={refreshRooms}>Refresh Rooms</button>
+              </ul>
+            </div>
+            <div class="margin-left">
+              <h3>Create New Room</h3>
+              <form on:submit={handleCreateRoom}>
+                <input type="text" placeholder="Room Name" bind:value={newRoomName} />
+                <button type="submit">Create</button>
+              </form>
+            </div>
+          </div>
+        {:else}
+          <p></p>
+        {/if}  
+        <div>
+          {#if selectedRoom !== null }
+            <div class="chat-room">
+              <div class="flex-center flex-column border">
+                <h3>Room: {roomName}</h3>
+                <div class="chatbox">
+                  <ul>
+                    {#each messages as message}
+                      <li class="messages-list">{message.userId}: {message.text} - {message.createdAt}</li>
+                    {/each}
+                  </ul>
+                </div>
+                <form on:submit={setMessage}>
+                  <div class="flex-row send-message-container">
+                    <input class="text-box" type="text" placeholder="Type your message" bind:value={newMessage} />
+                    <button class="send-message-button" type="submit">Send</button>
+                  </div>
+                </form>
+                <button on:click={handleBackRoom}>Leave Room</button>
+              </div>
+            </div>
+          {:else}
+            <p></p>
+          {/if}
+        </div>
       </div>
     </div>
   </div>
-{/if}
-
-{#if selectedRoom !== null }
-  <div class="chat-room">
-    <div>
-      <h3>Room: {roomName}</h3>
-      <ul>
-        {#each messages as message}
-          <li>{message.userId}: {message.text}</li>
-        {/each}
-      </ul>
-      <form on:submit={setMessage}>
-        <input type="text" placeholder="Type your message" bind:value={newMessage} />
-        <button class="margin-right" on:click={handleBackRoom}>Leave Room</button>
-        <button type="submit">Send</button>
-      </form>
-    </div>
-  </div>
-{:else}
-  <p></p>
 {/if}
 
 <style>
   .container {
     margin: 1em;
+  }
+
+  .border {
+    margin-bottom: 1em;
+    border: 1px solid darkgrey;
+    border-radius: 5px;
+    box-shadow: 1px 1px 1px darkgrey;
+    padding: 1em;
+  }
+
+  .border-right{
+    border-right: 1px solid darkgrey;
   }
 
   form{
@@ -448,12 +507,6 @@
   input{
     margin-bottom: 1em;
   }
-
-  .buttonContainer{
-    display: flex;
-    justify-content: space-around;
-  }
-
   .margin-right{
     margin-right: 1em;
   }
@@ -462,7 +515,16 @@
     margin-top: 1em;
   }
 
-  .roomsList{
+  .margin-left {
+    margin-left: 1em;
+  }
+
+  .rooms-list{
+    margin-bottom: .5em;
+    list-style-type: none;
+  }
+
+  .messages-list{
     margin-bottom: .5em;
     list-style-type: none;
   }
@@ -472,8 +534,47 @@
     justify-content: space-between;
   }
 
-  p, h1, h2, h3, h4, h5, h6, li {
-    font-size: 1.5em;
+  .flex-space-around {
+    display: flex;
+    justify-content: space-around;
   }
+
+  .flex-center {
+    display: flex;
+    justify-content: center;
+  }
+
+  .flex-row {
+    display:flex;
+    flex-direction: row;
+  }
+
+  .flex-column {
+    display:flex;
+    flex-direction: column;
+  }
+
+  .text-box {
+    width: -webkit-fill-available;
+    height: 3em;
+  }
+
+  .chatbox {
+    width: 500px;
+    height: 250px;
+    overflow: scroll;
+    display: flex;
+    flex-direction: column-reverse;
+  }
+
+  .send-message-container {
+    width: 500px;
+  }
+
+  .send-message-button {
+    margin-left: 1em;
+    height: 3em;
+  }
+
 
 </style>
