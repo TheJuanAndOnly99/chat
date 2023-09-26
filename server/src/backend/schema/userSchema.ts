@@ -1,8 +1,8 @@
 import mongoose from "mongoose";
-import { UserId } from "../../Users/domain/UserId";
-import { UserName } from "../../Users/domain/UserName";
-import { UserEmail } from "../../Users/domain/UserEmail";
-import { UserPassword } from "../../Users/domain/UserPassword";
+import { UserId } from "../models/Users/domain/UserId";
+import { UserName } from "../models/Users/domain/UserName";
+import { UserEmail } from "../models/Users/domain/UserEmail";
+import { UserPassword } from "../models/Users/domain/UserPassword";
 
 // User interface for mongoose
 export interface IUser extends mongoose.Document {

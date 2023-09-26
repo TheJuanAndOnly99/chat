@@ -18,14 +18,14 @@ import { MongoMessageRepository } from "./repositories/messageRepository";
 import { UserSchema } from "./schema/userSchema";
 import { RoomSchema } from "./schema/roomSchema";
 import { MessageSchema } from "./schema/messageSchema";
-import { UserCreator } from "../Users/application/UserCreator";
-import { RoomCreator } from '../Rooms/application/RoomCreator';
-import { MessageCreator } from "../Messages/application/MessageCreator";
-import { User } from "../Users/domain/User";
-import { Room } from "../Rooms/domain/Room";
-import { Message } from '../Messages/domain/Message';
+import { UserCreator } from "./models/Users/application/UserCreator";
+import { RoomCreator } from './models/Rooms/application/RoomCreator';
+import { MessageCreator } from "./models/Messages/application/MessageCreator";
+import { User } from "./models/Users/domain/User";
+import { Room } from "./models/Rooms/domain/Room";
+import { Message } from './models/Messages/domain/Message';
 
-const clientUrl = process.env.CLIENT_URL;
+const clientUrl = process.env.CLIENT_URL || "http://127.0.0.1:5173";
 
 export class Server {
   private readonly app: Application;

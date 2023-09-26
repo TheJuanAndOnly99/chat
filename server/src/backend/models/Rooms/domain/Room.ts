@@ -1,6 +1,6 @@
 import { RoomId } from './RoomId';
-import { Message } from '../../Messages/domain/Message';
-import { User } from '../../Users/domain/User';
+import { Message } from '../../../models/Messages/domain/Message';
+import { User } from '../../../models/Users/domain/User';
 
 export class Room {
   constructor(

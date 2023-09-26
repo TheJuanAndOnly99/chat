@@ -1,5 +1,5 @@
 import bcrypt from "bcrypt";
-import { StringValueObject } from "../../utilities/StringValueObject";
+import { StringValueObject } from "../../../../utilities/StringValueObject";
 
 export class UserPassword extends StringValueObject {
 	constructor(value: string) {

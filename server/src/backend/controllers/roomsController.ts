@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 
-import { RoomCreator } from '../../Rooms/application/RoomCreator';
-import { RoomCreatorRequest } from '../../Rooms/application/requests/RoomCreatorRequest';
+import { RoomCreator } from '../models/Rooms/application/RoomCreator';
+import { RoomCreatorRequest } from '../models/Rooms/application/requests/RoomCreatorRequest';
 import { MongoRoomRepository } from '../repositories/roomRepository';
 
 export class MongoRoomController {

@@ -2,10 +2,10 @@ import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import config from '../middleware/config';
 
-import { UserCreator } from '../../Users/application/UserCreator';
-import { UserCreatorRequest } from '../../Users/application/requests/UserCreatorRequest';
+import { UserCreator } from '../models/Users/application/UserCreator';
+import { UserCreatorRequest } from '../models/Users/application/requests/UserCreatorRequest';
 import { MongoUserRepository } from '../repositories/userRepository';
-import { UserName } from '../../Users/domain/UserName';
+import { UserName } from '../models/Users/domain/UserName';
 
 export class MongoUserController {
   private readonly repository: MongoUserRepository;

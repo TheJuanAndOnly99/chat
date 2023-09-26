@@ -1,7 +1,7 @@
-import { Room } from "../../Rooms/domain/Room";
+import { Room } from "../models/Rooms/domain/Room";
 import { Model } from "mongoose";
-import { RoomRepository } from "../../Rooms/domain/RoomRepository";
-import { Message } from "../../Messages/domain/Message";
+import { RoomRepository } from "../models/Rooms/domain/RoomRepository";
+import { Message } from "../models/Messages/domain/Message";
 
 export class MongoRoomRepository implements RoomRepository {
   private roomModel: Model<Room>;

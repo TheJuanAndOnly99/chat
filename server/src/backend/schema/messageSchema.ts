@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { MessageId } from "../../Messages/domain/MessageId";
+import { MessageId } from "../models/Messages/domain/MessageId";
 
 
 // Room interface for mongoose

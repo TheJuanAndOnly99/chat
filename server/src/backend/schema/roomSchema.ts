@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
-import { RoomId } from "../../Rooms/domain/RoomId";
-import { User } from "../../Users/domain/User";
-import { Message } from "../../Messages/domain/Message";
+import { RoomId } from "../models/Rooms/domain/RoomId";
+import { User } from "../models/Users/domain/User";
+import { Message } from "../models/Messages/domain/Message";
 
 // Room interface for mongoose
 export interface IRoom extends mongoose.Document {
