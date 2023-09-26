@@ -1,4 +1,3 @@
-[![Deployment Pipeline](https://github.com/TheJuanAndOnly99/chat/actions/workflows/pipeline.yml/badge.svg)](https://github.com/TheJuanAndOnly99/chat/actions/workflows/pipeline.yml)
 ![GitHub](https://img.shields.io/github/license/TheJuanAndOnly99/chat)
 
 # Chat Application
